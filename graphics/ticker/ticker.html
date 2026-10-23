@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YCS Broadcast Ticker</title>
+<link rel="stylesheet" href="./ticker.css">
+<script src="./adapters/spx.js"></script>
+<script type="module" src="./src/main.js"></script>
+<script>
+window.SPXGCTemplateDefinition = {
+  "description": "YCS Broadcast Ticker",
+  "playserver": "OVERLAY", "playchannel": "1", "playlayer": "7", "webplayout": "7",
+  "steps": "1", "out": "manual", "uicolor": "2", "dataformat": "json",
+  "DataFields": [
+    { "field": "f0", "ftype": "dropdown", "title": "Broadcast instance", "value": "broadcast-1", "items": [
+      { "text": "Broadcast 1", "value": "broadcast-1" },
+      { "text": "Broadcast 2", "value": "broadcast-2" },
+      { "text": "Broadcast 3", "value": "broadcast-3" }
+    ] },
+    { "field": "f1", "ftype": "textarea", "title": "Instance overrides (JSON)", "value": "{}" }
+  ]
+};
+</script>
+</head>
+<body>
+<div id="ticker" aria-label="Broadcast ticker">
+<img id="bg" src="./assets/ticker-background.png" alt="">
+<img id="logo" src="./assets/ycs-logo.png" alt="Event logo">
+<div id="left"><div id="date"></div><div id="location"></div></div>
+<div id="center"><div id="topicbar"><div id="topic-inner"><span id="category"></span><span id="topic"></span></div></div>
+<div id="crawl-viewport"><div id="crawl-track"></div></div></div>
+<div id="right"><div id="status"></div><div id="round"></div><div id="remaining"></div></div>
+</div>
+</body>
+</html>

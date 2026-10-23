@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YCS Broadcast Ticker</title>
+<style>
+@font-face{font-family:Anybody;src:url("./assets/Anybody-Medium.otf")}@font-face{font-family:Anybody;src:url("./assets/Anybody-Bold.otf");font-weight:700}
+@font-face{font-family:Apotek;src:url("./assets/ApotekComp-Regular.otf")}
+:root{--yellow:#f3cc42;--black:#202020;--ticker-height:103px;--left:472px;--right:328px;--speed:145px}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}
+#ticker{position:absolute;left:0;bottom:65px;width:100%;height:var(--ticker-height);transform:translateY(calc(100% + 100px));transition:transform 650ms cubic-bezier(.2,.8,.2,1);font-family:Anybody,Arial,sans-serif;color:white}
+#ticker.visible{transform:translateY(0)}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+#logo{position:absolute;left:0;bottom:-7px;height:132px;width:270px;object-fit:contain;object-position:left bottom}
+#left{position:absolute;left:280px;top:8px;bottom:8px;width:calc(var(--left) - 280px);display:flex;flex-direction:column;justify-content:center;overflow:hidden;white-space:nowrap}
+#date{font-size:23px;line-height:1.1;color:var(--yellow);font-weight:700}
+#location{font-family:Apotek,Arial,sans-serif;font-size:40px;line-height:1.05}
+#center{position:absolute;left:var(--left);right:var(--right);top:0;bottom:0;overflow:hidden}
+#topicbar{position:absolute;left:0;right:0;top:0;height:50%;display:flex;align-items:center;white-space:nowrap;overflow:hidden;padding:0 14px;font-size:27px}
+#topic-inner{display:flex;gap:12px;align-items:baseline;transition:opacity 180ms ease,transform 180ms ease;min-width:0}
+#topic-inner.out{opacity:0;transform:translateY(-13px)}
+#category{font-weight:700;color:var(--yellow);flex:none}
+#topic{overflow:hidden;text-overflow:clip}
+#crawl-viewport{position:absolute;top:50%;bottom:0;left:0;right:0;overflow:hidden;color:#111}
+#crawl-track{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;gap:0;white-space:nowrap;will-change:transform}
+.crawl-item{display:flex;align-items:center;flex:none;font-size:24px;font-weight:700;white-space:nowrap}
+.crawl-gap{display:inline-block;width:190px;flex:none}
+#right{position:absolute;right:8px;top:4px;bottom:4px;width:calc(var(--right) - 16px);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center}
+#status{font-size:23px;line-height:1.04;color:var(--yellow);font-weight:700;white-space:nowrap}
+#round{font-family:Apotek,Arial,sans-serif;line-height:1;white-space:nowrap;display:block;transform-origin:center center;font-size:38px}
+#remaining{font-size:15px;line-height:1.05;font-weight:700;color:var(--yellow);white-space:nowrap}
+#right.no-remaining #status{font-size:27px}
+#right.no-remaining #round{font-size:45px}
+#right.no-remaining #remaining{display:none}
+</style>
+</head>
+<body>
+<div id="ticker" aria-label="Broadcast ticker">
+<img id="bg" src="./assets/ticker-background.png" alt="">
+<img id="logo" src="./assets/ycs-logo.png" alt="Event logo">
+<div id="left"><div id="date"></div><div id="location"></div></div>
+<div id="center"><div id="topicbar"><div id="topic-inner"><span id="category"></span><span id="topic"></span></div></div>
+<div id="crawl-viewport"><div id="crawl-track"></div></div></div>
+<div id="right"><div id="status"></div><div id="round"></div><div id="remaining"></div></div>
+</div>
+<script>
+"use strict";
+const DEFAULT_DATA={
+ logo:"./assets/ycs-logo.png",
+ dayDate:"DAY 1 - AUGUST 19, 2024",
+ location:"YCS SACRAMENTO, CA",
+ status:"IN PROGRESS",
+ currentRound:"SWISS ROUND 11 OF 15",
+ roundsRemaining:"5 ROUNDS REMAINING TODAY",
+ showRoundsRemaining:true,
+ crawlSpeed:145,
+ tickerItems:[
+  {category:"YU-GI-OH! TCG",topic:"YU-GI-OH! NEURON APP",subtopic:"Genesys support has been added to NEURON! Download the app today and use it to build Genesys Decks, locate your local OTS, print Deck Lists, review Deck trends, and more!"},
+  {category:"YU-GI-OH! TCG",topic:"SPEED DUEL GX: MIDTERM DESTRUCTION",subtopic:"WITH 4 READY-TO-PLAY DECKS RIGHT OUT OF THE BOX, SPEED DUEL GX: MIDTERM DESTRUCTION IS READY FOR DUELISTS!"}
+ ]
+};
+let data=structuredClone(DEFAULT_DATA),items=[],offset=0,lastTime=0,active=-1,headerTimer=null,paused=false;
+const $=id=>document.getElementById(id);
+const track=$("crawl-track");
+const viewport=$("crawl-viewport");
+function updateHeader(index,instant=false){
+ if(!items.length)return;
+ index=((index%items.length)+items.length)%items.length;
+ if(index===active&&!instant)return;
+ active=index;
+ const item=items[index],inner=$("topic-inner");
+ clearTimeout(headerTimer);
+ const apply=()=>{$("category").textContent=item.category||"";$("topic").textContent=item.topic||"";inner.classList.remove("out")};
+ if(instant){apply();return}
+ inner.classList.add("out");headerTimer=setTimeout(apply,190);
+}
+function fitRound(){
+ const el=$("round"),panel=$("right");
+ el.style.transform="none";
+ // Prefer horizontal fit; preserve condensed typeface. Only compress height if line height exceeds available vertical space.
+ const maxW=panel.clientWidth-8;
+ const scaleX=Math.min(1,maxW/Math.max(el.scrollWidth,1));
+ const maxH=panel.classList.contains("no-remaining")?51:39;
+ const scaleY=Math.min(1,maxH/Math.max(el.getBoundingClientRect().height,1));
+ el.style.transform=`scale(${scaleX},${scaleY})`;
+}
+function buildTrack(){
+ items=(Array.isArray(data.tickerItems)?data.tickerItems:[]).filter(x=>x&&x.subtopic);
+ track.replaceChildren();offset=0;active=-1;
+ if(!items.length){items=[{category:"",topic:"",subtopic:""}]}
+ // At least two full cycles ensures the track is wider than the visible area.
+ let width=0,iterations=0;
+ while(width<viewport.clientWidth*2+2000 && iterations<100){
+  const index=iterations%items.length,entry=items[index];
+  const node=document.createElement("div");node.className="crawl-item";node.dataset.index=index;
+  const text=document.createElement("span");text.textContent=entry.subtopic;
+  const gap=document.createElement("span");gap.className="crawl-gap";
+  node.append(text,gap);track.append(node);
+  width+=node.getBoundingClientRect().width;iterations++;
+ }
+ updateHeader(0,true);
+}
+function render(){
+ $("logo").src=data.logo||"./assets/ycs-logo.png";
+ $("date").textContent=data.dayDate||"";
+ $("location").textContent=data.location||"";
+ $("status").textContent=data.status||"";
+ $("round").textContent=data.currentRound||"";
+ $("remaining").textContent=data.roundsRemaining||"";
+ $("right").classList.toggle("no-remaining",!data.showRoundsRemaining);
+ requestAnimationFrame(fitRound);
+}
+function tick(time){
+ if(lastTime===0)lastTime=time;
+ const dt=Math.min((time-lastTime)/1000,.05);lastTime=time;
+ if(!paused&&track.firstElementChild){
+  offset-=Math.max(0,Number(data.crawlSpeed)||0)*dt;
+  // As the first item fully exits, recycle it to the right.
+  while(track.firstElementChild&&offset+track.firstElementChild.offsetWidth<=0){
+   const first=track.firstElementChild;
+   offset+=first.offsetWidth;track.append(first);
+  }
+  track.style.transform=`translateX(${offset}px)`;
+  // Header changes when the next item reaches the left edge of the crawl viewport.
+  const first=track.firstElementChild;
+  if(first)updateHeader(Number(first.dataset.index));
+ }
+ requestAnimationFrame(tick);
+}
+function update(patch){
+ if(!patch||typeof patch!=="object")return;
+ const rebuild=Object.prototype.hasOwnProperty.call(patch,"tickerItems");
+ data={...data,...patch};render();
+ if(rebuild)buildTrack();
+}
+function show(){ $("ticker").classList.add("visible") }
+function hide(){ $("ticker").classList.remove("visible") }
+window.Ticker={show,hide,update,getData:()=>structuredClone(data),pause:()=>paused=true,resume:()=>paused=false};
+window.addEventListener("message",e=>{
+ const m=e.data;if(!m||typeof m!=="object"||m.type!=="YCS_TICKER")return;
+ if(m.action==="update")update(m.data);
+ if(m.action==="show")show();
+ if(m.action==="hide")hide();
+ if(m.action==="pause")paused=true;
+ if(m.action==="resume")paused=false;
+});
+window.addEventListener("resize",()=>{buildTrack();fitRound()});
+render();buildTrack();requestAnimationFrame(tick);
+const q=new URLSearchParams(location.search);
+if(q.get("autoplay")!=="0")requestAnimationFrame(show);
+</script>
+</body></html>

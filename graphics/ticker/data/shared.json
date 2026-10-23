@@ -1,0 +1,26 @@
+{
+  "logo": "./assets/ycs-logo.png",
+  "background": "./assets/ticker-background.png",
+  "dayDate": "DAY 1 - AUGUST 19, 2024",
+  "location": "YCS SACRAMENTO, CA",
+  "status": "IN PROGRESS",
+  "currentRound": "SWISS ROUND 11 OF 15",
+  "roundsRemaining": "5 ROUNDS REMAINING TODAY",
+  "showRoundsRemaining": true,
+  "crawlSpeed": 145,
+  "topicEntryDelayMs": 180,
+  "headerTransitionMs": 180,
+  "headerSwapGapMs": 10,
+  "tickerItems": [
+    {
+      "category": "YU-GI-OH! TCG",
+      "topic": "YU-GI-OH! NEURON APP",
+      "subtopic": "Genesys support has been added to NEURON! Download the app today and use it to build Genesys Decks, locate your local OTS, print Deck Lists, review Deck trends, and more!"
+    },
+    {
+      "category": "YU-GI-OH! TCG",
+      "topic": "SPEED DUEL GX: MIDTERM DESTRUCTION",
+      "subtopic": "WITH 4 READY-TO-PLAY DECKS RIGHT OUT OF THE BOX, SPEED DUEL GX: MIDTERM DESTRUCTION IS READY FOR DUELISTS!"
+    }
+  ]
+}

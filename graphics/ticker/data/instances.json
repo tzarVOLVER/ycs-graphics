@@ -1,0 +1,5 @@
+{
+  "broadcast-1": { "stage": "stage-1", "overrides": {} },
+  "broadcast-2": { "stage": "stage-2", "overrides": {} },
+  "broadcast-3": { "stage": "stage-3", "overrides": {} }
+}
