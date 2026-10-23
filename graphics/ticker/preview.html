@@ -1,21 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>YCS ticker — three broadcasts</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YCS ticker — output previews</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#14171d;color:#f5f6f8;font:15px system-ui,sans-serif}main{max-width:1500px;margin:auto;padding:28px}h1{margin:0 0 8px;font-size:26px}p{color:#bac2d0;line-height:1.5}a{color:#f3cc42}section{border:1px solid #363e4b;border-radius:8px;margin:20px 0;overflow:hidden}header{padding:12px 18px;background:#222832;display:flex;gap:12px;flex-wrap:wrap;align-items:center}header strong{margin-right:auto}button,input{font:inherit;border:1px solid #586171;border-radius:4px;padding:6px 9px;background:#161b23;color:inherit}button{cursor:pointer}button:hover{border-color:#f3cc42}input[type=number]{width:85px}.output{position:relative;overflow:hidden;background:repeating-conic-gradient(#252b34 0 25%,#20252d 0 50%) 0/24px 24px}iframe{position:absolute;left:0;top:0;width:1920px;height:1080px;border:0;transform-origin:top left}label{display:inline-flex;align-items:center;gap:6px}.shared{display:flex;align-items:center;flex-wrap:wrap;gap:10px}#notice{min-height:1.5em;color:#f3cc42}.links{font-size:13px}
+body{margin:24px;background:#14171d;color:#f5f6f8;font:15px system-ui,sans-serif}h1{font-size:24px}p{color:#bac2d0}a{color:#f3cc42}section{margin:24px 0}h2{font-size:16px}.output{position:relative;overflow:hidden;width:2048px;height:250px;background:repeating-conic-gradient(#252b34 0 25%,#20252d 0 50%) 0/24px 24px}iframe{position:absolute;left:0;top:-830px;width:2048px;height:1080px;border:0}
 </style>
 </head>
-<body><main>
-<h1>YCS broadcast ticker</h1>
-<p>Three independent 1920 × 1080 outputs. These previews crop the bottom of each transparent canvas; the broadcast artwork and scale are unchanged.</p>
-<div class="shared"><label>Shared status <input id="shared-status" value="IN PROGRESS"></label><button id="apply-shared">Update all broadcasts</button></div>
-<p id="notice" role="status"></p>
-<div id="outputs"></div>
-<p class="links"><a href="./qa.html">Run browser checks</a> · <a href="../../README.md">Project documentation</a></p>
-</main>
-<script type="module" src="./src/preview.js"></script>
-</body>
-</html>
+<body>
+<h1>YCS output previews</h1>
+<p>Each bar is 2048 × 103 pixels at native size. Scroll horizontally in a smaller window. Control the graphics in SPX.</p>
+<section><h2><a href="./ticker.html?instance=broadcast-1">Broadcast 1 / stage-1</a></h2><div class="output"><iframe title="Broadcast 1 output" src="./ticker.html?instance=broadcast-1"></iframe></div></section>
+<section><h2><a href="./ticker.html?instance=broadcast-2">Broadcast 2 / stage-2</a></h2><div class="output"><iframe title="Broadcast 2 output" src="./ticker.html?instance=broadcast-2"></iframe></div></section>
+<section><h2><a href="./ticker.html?instance=broadcast-3">Broadcast 3 / stage-3</a></h2><div class="output"><iframe title="Broadcast 3 output" src="./ticker.html?instance=broadcast-3"></iframe></div></section>
+</body></html>

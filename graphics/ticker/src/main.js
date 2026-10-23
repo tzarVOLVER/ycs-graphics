@@ -43,7 +43,7 @@ const ready = (async () => {
   if (disposed) return;
   renderer.fitRound();
   renderer.start();
-  if (params.get('autoplay') !== '0') renderer.show();
+  if (params.get('autoplay') !== '0' && !window.YCS_SPX_CONTROLLED) renderer.show();
   document.documentElement.dataset.ready = 'true';
 })();
 

@@ -17,7 +17,7 @@ async function frame(url) {
   container.append(el);
   document.getElementById('outputs').append(container);
   new ResizeObserver(() => {
-    const scale = container.clientWidth / 1920;
+    const scale = container.clientWidth / 2048;
     container.style.height = `${250 * scale}px`;
     el.style.transform = `scale(${scale}) translateY(-830px)`;
   }).observe(container);
@@ -51,9 +51,24 @@ document.getElementById('run').addEventListener('click', async event => {
     for (const id of ['ticker', 'bg', 'logo', 'left', 'date', 'location', 'center', 'topicbar', 'topic-inner', 'category', 'topic', 'crawl-viewport', 'right', 'status', 'round', 'remaining']) {
       const oldStyle = baseline.getComputedStyle(baseline.document.getElementById(id));
       const newStyle = outputs[0].getComputedStyle(outputs[0].document.getElementById(id));
-      for (const prop of styleProperties) if (oldStyle[prop] !== newStyle[prop]) differences.push(`${id}.${prop}: ${oldStyle[prop]} -> ${newStyle[prop]}`);
+      for (const prop of styleProperties) {
+        if (prop === 'width' && ['date', 'location'].includes(id)) continue;
+        if (oldStyle[prop] !== newStyle[prop]) differences.push(`${id}.${prop}: ${oldStyle[prop]} -> ${newStyle[prop]}`);
+      }
     }
-    record('Prototype layout, fonts, colors and animation timings match', differences.length === 0, differences.join('; '));
+    record('Prototype fonts, colors, native-width layout and animation timings match', differences.length === 0, differences.join('; '));
+    const firstFrame = outputs[0].frameElement;
+    firstFrame.style.width = '960px';
+    firstFrame.style.height = '600px';
+    await wait(100);
+    const bar = outputs[0].document.getElementById('ticker').getBoundingClientRect();
+    const background = outputs[0].document.getElementById('bg').getBoundingClientRect();
+    // Bounding rects can carry floating-point rounding during the slide-in.
+    record('Bar and PNG stay 2048 by 103 in a smaller browser viewport', [bar, background].every(rect => Math.abs(rect.width - 2048) < 0.01 && Math.abs(rect.height - 103) < 0.01));
+    firstFrame.style.width = '2048px';
+    firstFrame.style.height = '1080px';
+    const leftPanel = outputs[0].document.getElementById('left').getBoundingClientRect();
+    record('Complete date and location fit their fixed panel', ['date', 'location'].every(id => outputs[0].document.getElementById(id).getBoundingClientRect().right <= leftPanel.right + 1));
     await outputs[0].Ticker.updateStage({ status: 'STAGE ONE ONLY' });
     record('Stage update stays within its broadcast', outputs[0].document.getElementById('status').textContent === 'STAGE ONE ONLY' && outputs[1].document.getElementById('status').textContent === 'IN PROGRESS' && outputs[2].document.getElementById('status').textContent === 'IN PROGRESS');
     await Promise.all(outputs.map(output => output.Ticker.updateShared({ location: 'SHARED LOCATION' })));
@@ -103,6 +118,11 @@ document.getElementById('run').addEventListener('click', async event => {
     record('SPX update and stop bridge works', output.document.getElementById('status').textContent === 'SPX UPDATE' && !output.Ticker.getState().visible);
     await output.play();
     record('SPX play bridge shows the ticker', output.Ticker.getState().visible);
+    const positionBeforeToggle = output.Ticker.getState().offset;
+    await output.update({ f2: '0', f3: '3 ROUNDS REMAINING TODAY', f5: 'SWISS ROUND 12 OF 15' });
+    record('SPX checkbox hides remaining text and expands the round label without restarting motion', output.getComputedStyle(output.document.getElementById('remaining')).display === 'none' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '45px' && output.Ticker.getState().offset === positionBeforeToggle && !output.Ticker.getState().paused);
+    await output.update({ f2: '1' });
+    record('SPX checkbox restores remaining text on just its output', output.getComputedStyle(output.document.getElementById('remaining')).display !== 'none' && output.document.getElementById('remaining').textContent === '3 ROUNDS REMAINING TODAY' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '38px' && outputs[1].document.getElementById('remaining').textContent === '5 ROUNDS REMAINING TODAY');
     const priorData = output.Ticker.getData().status;
     let rejected = false;
     try { await output.Ticker.update({ status: 'BAD', crawlSpeed: -1 }); } catch { rejected = true; }

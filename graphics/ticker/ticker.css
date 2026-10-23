@@ -1,14 +1,16 @@
 @font-face{font-family:Anybody;src:url("./assets/Anybody-Medium.otf")}@font-face{font-family:Anybody;src:url("./assets/Anybody-Bold.otf");font-weight:700}
 @font-face{font-family:Apotek;src:url("./assets/ApotekComp-Regular.otf")}
 :root{--yellow:#f3cc42;--black:#202020;--ticker-height:103px;--left:472px;--right:328px;--speed:145px}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}
-#ticker{position:absolute;left:0;bottom:65px;width:100%;height:var(--ticker-height);transform:translateY(calc(100% + 100px));transition:transform 650ms cubic-bezier(.2,.8,.2,1);font-family:Anybody,Arial,sans-serif;color:white}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}body{position:relative}
+/* Match the supplied 2048 x 103 PNG exactly, independent of browser size. */
+#ticker{position:absolute;left:0;bottom:65px;width:2048px;height:103px;transform:translateY(calc(100% + 100px));transition:transform 650ms cubic-bezier(.2,.8,.2,1);font-family:Anybody,Arial,sans-serif;color:white}
 #ticker.visible{transform:translateY(0)}
-#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+#bg{position:absolute;inset:0;width:2048px;height:103px;pointer-events:none}
 #logo{position:absolute;left:0;bottom:-7px;height:132px;width:270px;object-fit:contain;object-position:left bottom}
 #left{position:absolute;left:280px;top:8px;bottom:8px;width:calc(var(--left) - 280px);display:flex;flex-direction:column;justify-content:center;overflow:hidden;white-space:nowrap}
 #date{font-size:23px;line-height:1.1;color:var(--yellow);font-weight:700}
 #location{font-family:Apotek,Arial,sans-serif;font-size:40px;line-height:1.05}
+#date,#location{width:max-content;transform-origin:left center}
 #center{position:absolute;left:var(--left);right:var(--right);top:0;bottom:0;overflow:hidden}
 #topicbar{position:absolute;left:0;right:0;top:0;height:50%;display:flex;align-items:center;white-space:nowrap;overflow:hidden;padding:0 14px;font-size:27px}
 #topic-inner{display:flex;gap:12px;align-items:baseline;transition:opacity var(--topic-transition-duration,180ms) ease,transform var(--topic-transition-duration,180ms) ease;min-width:0}

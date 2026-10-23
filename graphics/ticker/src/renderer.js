@@ -41,6 +41,11 @@ export class TickerRenderer {
   }
 
   fitRound() {
+    const left = this.$('left');
+    for (const id of ['date', 'location']) {
+      const text = this.$(id);
+      text.style.transform = `scaleX(${Math.min(1, left.clientWidth / Math.max(text.scrollWidth, 1))})`;
+    }
     const el = this.$('round'), panel = this.$('right');
     el.style.transform = 'none';
     const scaleX = Math.min(1, (panel.clientWidth - 8) / Math.max(el.scrollWidth, 1));
