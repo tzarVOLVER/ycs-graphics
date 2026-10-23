@@ -2,8 +2,8 @@ import { createDataStore } from './data.js';
 import { TickerRenderer } from './renderer.js';
 
 const renderer = new TickerRenderer(document.getElementById('ticker'));
-const params = new URLSearchParams(location.search);
-let instanceId = params.get('instance') || 'broadcast-1';
+const templateInstanceId = document.documentElement.dataset.instance || 'broadcast-1';
+let instanceId = templateInstanceId;
 let stageId;
 let store;
 let disposed = false;
@@ -43,7 +43,7 @@ const ready = (async () => {
   if (disposed) return;
   renderer.fitRound();
   renderer.start();
-  if (params.get('autoplay') !== '0' && !window.YCS_SPX_CONTROLLED) renderer.show();
+  // SPX owns visibility. Loading or updating a template must never put it on air.
   document.documentElement.dataset.ready = 'true';
 })();
 
@@ -56,7 +56,10 @@ window.Ticker = {
   update: patch => ready.then(() => change('overrides', patch)),
   updateShared: patch => ready.then(() => change('shared', patch)),
   updateStage: patch => ready.then(() => change('stage', patch)),
-  selectInstance: id => ready.then(() => loadInstance(id)),
+  selectInstance: id => ready.then(() => {
+    if (id !== templateInstanceId) throw new Error(`This template is assigned to ${templateInstanceId}`);
+    return loadInstance(id);
+  }),
   reloadData: () => ready.then(() => loadInstance(instanceId)),
   getData: () => store?.get(),
   getState: () => ({ instanceId, stageId, ...renderer.getState() }),
