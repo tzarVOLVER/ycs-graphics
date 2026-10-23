@@ -44,14 +44,16 @@ export class TickerRenderer {
     const left = this.$('left');
     for (const id of ['date', 'location']) {
       const text = this.$(id);
-      text.style.transform = `scaleX(${Math.min(1, left.clientWidth / Math.max(text.scrollWidth, 1))})`;
+      text.style.transform = 'none';
+      text.style.transform = `scaleX(${Math.min(1, left.clientWidth / Math.max(text.getBoundingClientRect().width, 1))})`;
     }
-    const el = this.$('round'), panel = this.$('right');
-    el.style.transform = 'none';
-    const scaleX = Math.min(1, (panel.clientWidth - 8) / Math.max(el.scrollWidth, 1));
-    const maxH = panel.classList.contains('no-remaining') ? 51 : 39;
-    const scaleY = Math.min(1, maxH / Math.max(el.getBoundingClientRect().height, 1));
-    el.style.transform = `scale(${scaleX},${scaleY})`;
+    const box = this.$('round-box');
+    for (const [id, width] of [['round', box.clientWidth], ['status', box.clientWidth], ['remaining', box.clientWidth]]) {
+      const text = this.$(id);
+      // The CSS base size sets the maximum. Short labels never stretch to fill.
+      text.style.transform = 'none';
+      text.style.transform = `scaleX(${Math.min(1, width / Math.max(text.getBoundingClientRect().width, 1))})`;
+    }
   }
 
   appendItem() {

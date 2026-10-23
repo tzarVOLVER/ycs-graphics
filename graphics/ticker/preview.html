@@ -4,13 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>YCS ticker — output previews</title>
 <style>
-body{margin:24px;background:#14171d;color:#f5f6f8;font:15px system-ui,sans-serif}h1{font-size:24px}p{color:#bac2d0}a{color:#f3cc42}section{margin:24px 0}h2{font-size:16px}.output{position:relative;overflow:hidden;width:2048px;height:250px;background:repeating-conic-gradient(#252b34 0 25%,#20252d 0 50%) 0/24px 24px}iframe{position:absolute;left:0;top:-830px;width:2048px;height:1080px;border:0}
+body{margin:24px;background:#14171d;color:#f5f6f8;font:15px system-ui,sans-serif}h1{font-size:24px}p{color:#bac2d0}a{color:#f3cc42}section{margin:24px 0}h2{font-size:16px}.output{position:relative;overflow:hidden;width:100%;max-width:1920px;background:repeating-conic-gradient(#252b34 0 25%,#20252d 0 50%) 0/24px 24px}iframe{position:absolute;left:0;top:0;width:1920px;height:1080px;border:0;transform-origin:top left}
 </style>
 </head>
 <body>
 <h1>YCS output previews</h1>
-<p>Each bar is 2048 × 103 pixels at native size. Scroll horizontally in a smaller window. Control the graphics in SPX.</p>
+<p>1920 × 1080 broadcast layout. Fixed 1586 × 80 pixel bar at x=202, y=974. The viewer zooms the bottom of each canvas to fit this window. Control the graphics in SPX.</p>
 <section><h2><a href="./ticker.html?instance=broadcast-1">Broadcast 1 / stage-1</a></h2><div class="output"><iframe title="Broadcast 1 output" src="./ticker.html?instance=broadcast-1"></iframe></div></section>
 <section><h2><a href="./ticker.html?instance=broadcast-2">Broadcast 2 / stage-2</a></h2><div class="output"><iframe title="Broadcast 2 output" src="./ticker.html?instance=broadcast-2"></iframe></div></section>
 <section><h2><a href="./ticker.html?instance=broadcast-3">Broadcast 3 / stage-3</a></h2><div class="output"><iframe title="Broadcast 3 output" src="./ticker.html?instance=broadcast-3"></iframe></div></section>
+<script type="module" src="./src/preview.js"></script>
 </body></html>

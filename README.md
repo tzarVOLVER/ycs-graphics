@@ -10,13 +10,23 @@ Requires Node.js 22 or later. No packages or build step are required.
 node scripts/serve.mjs
 ```
 
-Open [the three-broadcast preview](http://127.0.0.1:8000/graphics/ticker/preview.html). Use a transparent 2048 × 1080 browser source for each output. The bar and its background remain exactly 2048 × 103 pixels, matching the supplied PNG at native size:
+Open [the three-broadcast preview](http://127.0.0.1:8000/graphics/ticker/preview.html). Use a transparent **1920 × 1080** browser source for each output. The fixed layout follows the supplied 1080p broadcast reference:
 
 - [Broadcast 1](http://127.0.0.1:8000/graphics/ticker/ticker.html?instance=broadcast-1)
 - [Broadcast 2](http://127.0.0.1:8000/graphics/ticker/ticker.html?instance=broadcast-2)
 - [Broadcast 3](http://127.0.0.1:8000/graphics/ticker/ticker.html?instance=broadcast-3)
 
-Set the SPX/browser source canvas to 2048 × 1080 to see the full width. The bar stays 65 pixels above the bottom of the canvas. Narrower windows crop the output rather than shrinking it. The preview is read-only, has no operator controls, and scrolls horizontally to show the complete native-width bar.
+Set the SPX/browser source canvas to **1920 × 1080**. Fixed reference geometry:
+
+| Element | Position / size in canvas pixels |
+| --- | --- |
+| Bar/background | x=202, y=974, width=1586, height=80 |
+| Logo image box | x=132, y=947, width=138, height=132 |
+| Date/location panel | x=280, y=978, width=278, height=72 |
+| Crawler/header panel | x=568 through x=1534 |
+| Right panel | x=1534, y=974, width=254, height=80 |
+
+The original 2048 × 103 background PNG is rendered into the reference bar rectangle. The logo asset's transparent top/bottom pixels allow its visible artwork to overhang the bar, as in the example. Smaller browser viewports crop the fixed composition. The read-only preview zooms a view of each complete 1920 × 1080 canvas to the window; this does not change broadcast geometry or include operator controls.
 
 Serve over HTTP; opening the files directly does not support JSON/module loading. Bind the supplied server to localhost only. A production graphics server can serve the same static files.
 
@@ -24,7 +34,7 @@ Serve over HTTP; opening the files directly does not support JSON/module loading
 
 The crawler moves right to left at the prototype's default 145 px/s. A topic change is detected when the leading edge of the next subtopic crosses the crawler viewport's **right edge**. After a configurable delay, the old category/topic fades and slides up, the labels swap, and the new labels animate in. This never changes the track's opacity, playback state, position, or animation clock. Consecutive subtopics with the same category/topic do not reanimate the header.
 
-The supplied logo, background, Anybody/Apotek fonts, colors, native PNG dimensions, spacing, round fitting, and 650 ms whole-ticker entrance/exit are retained. `graphics/ticker/prototype.html` is a comparison reference with only its asset paths adjusted. The new output fixes the bar dimensions and fits the date/location horizontally within the left panel so they do not clip. The default content, including the original 2024 event date, is sample content from that prototype.
+The supplied logo/background assets, Anybody/Apotek fonts, colors, and 650 ms whole-ticker entrance/exit are retained. `graphics/ticker/prototype.html` is the original prototype reference with only its asset paths adjusted. The current layout follows the newer 1080p screenshot: the logo sits across the left end of the bar, with the date/location centered directly beside it. Text shrinks horizontally only when it exceeds its panel. The default content, including the original 2024 event date, is sample content from that prototype.
 
 Timing settings, in milliseconds:
 
@@ -35,6 +45,12 @@ Timing settings, in milliseconds:
 | `headerSwapGapMs` | 10 | Extra wait between the outgoing transition and label replacement |
 
 The new label starts animating in 370 ms after entry at the defaults: 180 ms entry delay + 180 ms exit + 10 ms gap. A value of zero is supported. These settings affect the header only. The prototype's 50 ms frame-gap cap is preserved after a browser stall; keep the actual broadcast output rendered and unthrottled.
+
+## Round text fitting
+
+The right panel has 9 pixel side insets, leaving a **236 pixel wide text box**. With remaining rounds hidden, the round box is **236 × 40**, using Apotek at a 56 px base size. With the remaining line visible, its height is 32 pixels and its base size is 44 px. CSS line heights keep the condensed capital letters inside these boxes.
+
+`SWISS ROUND 11` nearly fills the larger box at its natural base size. Longer labels such as `SWISS ROUND 11 OF 15` shrink horizontally to stay within it; shorter labels retain the base size and are never stretched to fill the width. Vertical scaling is not applied. Status and remaining text also fit their own available widths. The SPX checkbox switches these layouts without changing crawler playback.
 
 ## Shared, stage, and instance data
 
@@ -111,7 +127,7 @@ This is **not an OGraf-compliant package**. The core renderer and its lifecycle 
 node --test tests/*.test.js
 ```
 
-With the local server running, open [browser checks](http://127.0.0.1:8000/graphics/ticker/qa.html) and click **Run checks**. It compares prototype styling at the native width and checks fixed dimensions in smaller windows, label fitting, timing, uninterrupted motion, instance isolation, shared updates, and the SPX lifecycle/rounds checkbox. The test temporarily changes content/speed inside its own frames. These checks do not establish live broadcast frame pacing or SPX/OGraf host compatibility.
+With the local server running, open [browser checks](http://127.0.0.1:8000/graphics/ticker/qa.html) and click **Run checks**. It checks the screenshot-based 1080p placement, logo/text alignment, fixed geometry in smaller windows, short/long round fitting, retained typography/animation, timing, uninterrupted motion, instance isolation, shared updates, and the SPX lifecycle/rounds checkbox. The test temporarily changes content/speed inside its own frames. These checks do not establish live broadcast frame pacing or SPX/OGraf host compatibility.
 
 ## Project layout
 

@@ -17,7 +17,7 @@ async function frame(url) {
   container.append(el);
   document.getElementById('outputs').append(container);
   new ResizeObserver(() => {
-    const scale = container.clientWidth / 2048;
+    const scale = container.clientWidth / 1920;
     container.style.height = `${250 * scale}px`;
     el.style.transform = `scale(${scale}) translateY(-830px)`;
   }).observe(container);
@@ -46,29 +46,33 @@ document.getElementById('run').addEventListener('click', async event => {
     await baseline.document.fonts.ready;
     baseline.Ticker.pause();
     await Promise.all(outputs.map(output => output.Ticker.pause()));
-    const styleProperties = ['fontFamily', 'fontSize', 'fontWeight', 'color', 'height', 'width', 'left', 'right', 'bottom', 'top', 'lineHeight', 'gap', 'transitionDuration', 'transitionTimingFunction'];
+    const styleProperties = ['fontFamily', 'color', 'transitionDuration', 'transitionTimingFunction'];
     const differences = [];
-    for (const id of ['ticker', 'bg', 'logo', 'left', 'date', 'location', 'center', 'topicbar', 'topic-inner', 'category', 'topic', 'crawl-viewport', 'right', 'status', 'round', 'remaining']) {
+    for (const id of ['ticker', 'date', 'location', 'topic-inner', 'category', 'topic', 'round']) {
       const oldStyle = baseline.getComputedStyle(baseline.document.getElementById(id));
       const newStyle = outputs[0].getComputedStyle(outputs[0].document.getElementById(id));
-      for (const prop of styleProperties) {
-        if (prop === 'width' && ['date', 'location'].includes(id)) continue;
-        if (oldStyle[prop] !== newStyle[prop]) differences.push(`${id}.${prop}: ${oldStyle[prop]} -> ${newStyle[prop]}`);
-      }
+      for (const prop of styleProperties) if (oldStyle[prop] !== newStyle[prop]) differences.push(`${id}.${prop}`);
     }
-    record('Prototype fonts, colors, native-width layout and animation timings match', differences.length === 0, differences.join('; '));
+    record('Prototype typefaces, colors and animation behavior retained', differences.length === 0, differences.join('; '));
+    await waitUntil(() => Math.abs(outputs[0].document.getElementById('ticker').getBoundingClientRect().y - 974) < 0.01);
+    const near = (a, b) => Math.abs(a - b) < 0.02;
+    const rect = id => outputs[0].document.getElementById(id).getBoundingClientRect();
+    const bar = rect('ticker'), logo = rect('logo'), center = rect('center');
+    record('Bar matches 1080p reference position and dimensions', near(bar.x,202) && near(bar.y,974) && near(bar.width,1586) && near(bar.height,80));
+    record('Logo overhang and text columns match the reference', near(logo.x,132) && near(logo.y,947) && near(logo.width,138) && near(logo.height,132) && near(center.x,568) && near(center.right,1534));
     const firstFrame = outputs[0].frameElement;
     firstFrame.style.width = '960px';
     firstFrame.style.height = '600px';
     await wait(100);
-    const bar = outputs[0].document.getElementById('ticker').getBoundingClientRect();
-    const background = outputs[0].document.getElementById('bg').getBoundingClientRect();
-    // Bounding rects can carry floating-point rounding during the slide-in.
-    record('Bar and PNG stay 2048 by 103 in a smaller browser viewport', [bar, background].every(rect => Math.abs(rect.width - 2048) < 0.01 && Math.abs(rect.height - 103) < 0.01));
-    firstFrame.style.width = '2048px';
+    const smaller = rect('ticker');
+    record('Broadcast geometry stays fixed in a smaller viewport', near(smaller.width,1586) && near(smaller.height,80) && near(smaller.x,202) && near(smaller.y,974));
+    firstFrame.style.width = '1920px';
     firstFrame.style.height = '1080px';
-    const leftPanel = outputs[0].document.getElementById('left').getBoundingClientRect();
-    record('Complete date and location fit their fixed panel', ['date', 'location'].every(id => outputs[0].document.getElementById(id).getBoundingClientRect().right <= leftPanel.right + 1));
+    const leftPanel = rect('left');
+    record('Left text sits beside the logo and stays centered within its panel', near(leftPanel.x,280) && logo.right <= leftPanel.left && ['date', 'location'].every(id => {
+      const text = rect(id);
+      return text.left >= leftPanel.left - 1 && text.right <= leftPanel.right + 1 && near((text.left + text.right)/2, (leftPanel.left + leftPanel.right)/2);
+    }));
     await outputs[0].Ticker.updateStage({ status: 'STAGE ONE ONLY' });
     record('Stage update stays within its broadcast', outputs[0].document.getElementById('status').textContent === 'STAGE ONE ONLY' && outputs[1].document.getElementById('status').textContent === 'IN PROGRESS' && outputs[2].document.getElementById('status').textContent === 'IN PROGRESS');
     await Promise.all(outputs.map(output => output.Ticker.updateShared({ location: 'SHARED LOCATION' })));
@@ -120,9 +124,22 @@ document.getElementById('run').addEventListener('click', async event => {
     record('SPX play bridge shows the ticker', output.Ticker.getState().visible);
     const positionBeforeToggle = output.Ticker.getState().offset;
     await output.update({ f2: '0', f3: '3 ROUNDS REMAINING TODAY', f5: 'SWISS ROUND 12 OF 15' });
-    record('SPX checkbox hides remaining text and expands the round label without restarting motion', output.getComputedStyle(output.document.getElementById('remaining')).display === 'none' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '45px' && output.Ticker.getState().offset === positionBeforeToggle && !output.Ticker.getState().paused);
+    record('SPX checkbox hides remaining text and expands the round label without restarting motion', output.getComputedStyle(output.document.getElementById('remaining')).display === 'none' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '56px' && output.Ticker.getState().offset === positionBeforeToggle && !output.Ticker.getState().paused);
     await output.update({ f2: '1' });
-    record('SPX checkbox restores remaining text on just its output', output.getComputedStyle(output.document.getElementById('remaining')).display !== 'none' && output.document.getElementById('remaining').textContent === '3 ROUNDS REMAINING TODAY' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '38px' && outputs[1].document.getElementById('remaining').textContent === '5 ROUNDS REMAINING TODAY');
+    record('SPX checkbox restores remaining text on just its output', output.getComputedStyle(output.document.getElementById('remaining')).display !== 'none' && output.document.getElementById('remaining').textContent === '3 ROUNDS REMAINING TODAY' && output.getComputedStyle(output.document.getElementById('round')).fontSize === '44px' && outputs[1].document.getElementById('remaining').textContent === '5 ROUNDS REMAINING TODAY');
+    await output.update({ f2: '0', f5: 'SWISS ROUND 11' });
+    const roundBox = output.document.getElementById('round-box'), roundText = output.document.getElementById('round');
+    const boxRect = roundBox.getBoundingClientRect();
+    const panelRect = output.document.getElementById('right').getBoundingClientRect();
+    record('Round text box is 236 by 40 with nine pixel side margins', near(boxRect.width,236) && near(boxRect.height,40) && near(boxRect.left-panelRect.left,9) && near(panelRect.right-boxRect.right,9));
+    const normalRect = roundText.getBoundingClientRect();
+    record('Reference round label uses the larger base size without stretching', normalRect.width > boxRect.width*0.95 && normalRect.width <= boxRect.width && output.getComputedStyle(roundText).transform === 'matrix(1, 0, 0, 1, 0, 0)');
+    await output.update({ f5: 'SWISS ROUND 11 OF 15' });
+    const longRect = roundText.getBoundingClientRect();
+    record('Long round text shrinks horizontally and retains its height', longRect.left >= boxRect.left-0.1 && longRect.right <= boxRect.right+0.1 && near(longRect.height,normalRect.height) && roundText.scrollWidth > roundBox.clientWidth);
+    await output.update({ f5: 'R4' });
+    record('Short labels remain at base size rather than filling the box', roundText.getBoundingClientRect().width < boxRect.width/2 && output.getComputedStyle(roundText).transform === 'matrix(1, 0, 0, 1, 0, 0)');
+    await output.update({ f5: 'SWISS ROUND 11 OF 15', f2: '1' });
     const priorData = output.Ticker.getData().status;
     let rejected = false;
     try { await output.Ticker.update({ status: 'BAD', crawlSpeed: -1 }); } catch { rejected = true; }
