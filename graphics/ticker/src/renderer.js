@@ -1,4 +1,5 @@
 import { TopicTiming, topicKey, crossedRightEdge, advanceOffset } from './timing.js';
+import { fitHorizontal } from './fit.js';
 
 export class TickerRenderer {
   constructor(root) {
@@ -17,6 +18,25 @@ export class TickerRenderer {
     this.headerTimer = null;
     this.frame = null;
     this.headerKey = null;
+    this.fitFrame = null;
+    this.scheduleFit = () => {
+      if (this.disposed || this.fitFrame !== null) return;
+      this.fitFrame = requestAnimationFrame(() => {
+        this.fitFrame = null;
+        if (!this.disposed) this.fitRound();
+      });
+    };
+    const labels = ['date', 'location', 'status', 'round', 'remaining'].map(this.$);
+    if (typeof ResizeObserver === 'function') {
+      this.fitResizeObserver = new ResizeObserver(this.scheduleFit);
+      for (const element of [root, this.$('left'), this.$('round-box'), ...labels]) this.fitResizeObserver.observe(element);
+    }
+    if (typeof MutationObserver === 'function') {
+      this.fitTextObserver = new MutationObserver(this.scheduleFit);
+      for (const element of labels) this.fitTextObserver.observe(element, { childList: true, characterData: true, subtree: true });
+    }
+    this.fonts = root.ownerDocument.fonts;
+    this.fonts?.addEventListener('loadingdone', this.scheduleFit);
     this.onResize = () => { this.fillTrack(); this.seedPositions(); this.fitRound(); };
     window.addEventListener('resize', this.onResize);
   }
@@ -44,15 +64,13 @@ export class TickerRenderer {
     const left = this.$('left');
     for (const id of ['date', 'location']) {
       const text = this.$(id);
-      text.style.transform = 'none';
-      text.style.transform = `scaleX(${Math.min(1, left.clientWidth / Math.max(text.getBoundingClientRect().width, 1))})`;
+      fitHorizontal(text, left.clientWidth);
     }
     const box = this.$('round-box');
     for (const [id, width] of [['round', box.clientWidth], ['status', box.clientWidth], ['remaining', box.clientWidth]]) {
       const text = this.$(id);
       // The CSS base size sets the maximum. Short labels never stretch to fill.
-      text.style.transform = 'none';
-      text.style.transform = `scaleX(${Math.min(1, width / Math.max(text.getBoundingClientRect().width, 1))})`;
+      fitHorizontal(text, width);
     }
   }
 
@@ -153,7 +171,11 @@ export class TickerRenderer {
     }
   }
 
-  show() { this.root.classList.add('visible'); }
+  show() {
+    this.root.classList.add('visible');
+    this.fitRound();
+    this.scheduleFit();
+  }
   hide() { this.root.classList.remove('visible'); }
   pause() { this.paused = true; }
   resume() { this.paused = false; }
@@ -163,6 +185,10 @@ export class TickerRenderer {
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.frame);
+    if (this.fitFrame !== null) cancelAnimationFrame(this.fitFrame);
+    this.fitResizeObserver?.disconnect();
+    this.fitTextObserver?.disconnect();
+    this.fonts?.removeEventListener('loadingdone', this.scheduleFit);
     clearTimeout(this.headerTimer);
     window.removeEventListener('resize', this.onResize);
   }
