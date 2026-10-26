@@ -1,5 +1,7 @@
 # YCS SPX ticker templates
 
+A separate [Current round data-link pilot](integrations/spx-data-link/README.md) tests chain-button Linked/Manual controls in an isolated SPX 1.4.1 rundown. It uses local test data; Sheets/API connectors are not included yet.
+
 Three SPX templates for 1920 x 1080 broadcast output:
 
 - `graphics/ticker/YCS-Ticker-1.html` — broadcast-1, default layer 7
