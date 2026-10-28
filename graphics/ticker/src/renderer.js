@@ -54,9 +54,16 @@ export class TickerRenderer {
     this.$('right').classList.toggle('no-remaining', !data.showRoundsRemaining);
     this.fitRound();
     if (playlistChanged) {
-      // Already queued text stays in place. New items join at the offscreen tail.
+      // Preserve everything already entering/on screen. Replace only the unseen
+      // tail so an unpublished story does not wait through the old lookahead.
+      for (const node of [...this.track.children]) {
+        if (node.offsetLeft + this.offset >= this.viewport.clientWidth) node.remove();
+      }
+      const anchor = this.track.lastElementChild?.entry;
       this.items = data.tickerItems;
-      this.nextIndex = 0;
+      const key = item => item?.id ? 'id:' + item.id : JSON.stringify(item);
+      const previous = anchor ? this.items.findIndex(item => key(item) === key(anchor)) : -1;
+      this.nextIndex = this.items.length ? (previous + 1) % this.items.length : 0;
     }
   }
 

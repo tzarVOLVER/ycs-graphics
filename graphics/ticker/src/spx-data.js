@@ -10,6 +10,14 @@ export function mapSpxUpdate(input) {
   else if (payload?.data && typeof payload.data === 'object') fields = payload.data;
   const advanced = typeof fields.f1 === 'string' ? JSON.parse(fields.f1 || '{}') : fields.f1 ?? {};
   const patch = validatePatch(advanced);
+  if (Object.hasOwn(fields, 'f14')) {
+    let stories = fields.f14;
+    if (typeof stories === 'string') {
+      try { stories = JSON.parse(stories); }
+      catch { stories = JSON.parse(stories.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#92;/g, '\\').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')); }
+    }
+    patch.tickerItems = validatePatch({ tickerItems: stories }).tickerItems;
+  }
   for (const [field, name] of Object.entries(textFields)) {
     if (Object.hasOwn(fields, field)) patch[name] = fields[field];
   }

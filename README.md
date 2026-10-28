@@ -8,7 +8,7 @@ Three SPX templates for 1920 x 1080 broadcast output:
 - `graphics/ticker/YCS-Ticker-2.html` — broadcast-2, default layer 8
 - `graphics/ticker/YCS-Ticker-3.html` — broadcast-3, default layer 9
 
-Each template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. Additional JSON data can supply `tickerItems`. Each template is assigned to its own instance; route its layer to the intended output in SPX.
+Each template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. The Stories field (`f14`) supplies a JSON story list; additional JSON (`f1`) remains available for other overrides. Each template is assigned to its own instance; route its layer to the intended output in SPX.
 
 ## Package
 
@@ -31,3 +31,16 @@ node --test tests/*.test.js
 ```
 
 SPX field/lifecycle bridges are tested in isolation. Live SPX playout still needs host validation. This is an SPX package; OGraf compliance is not claimed. OGraf preparation notes remain in `graphics/ticker/adapters/ograf/README.md` and are excluded from the SPX ZIP.
+
+
+## Linked story playlists
+
+The custom [YCS SPX fork](https://github.com/tzarVOLVER/ycs-spx/pull/1) adds a visual playlist mapper to Data Manager. Open the ticker's **Stories → Map story list**, choose a Sheets range or JSON array, then map its columns/properties to Category, Topic and Crawler text. For the current sheet, Published controls inclusion and Subtopic maps to Crawler text. Header names are configurable and remain stable when columns move. Missing/renamed/duplicated headers trigger a remapping warning.
+
+Order and Story ID are optional. Without Order the source sequence is used; without IDs, content identity is used. Optional fields can be unused or fixed, with fallbacks for blank source values. Preview shows published, excluded and invalid records. Lists support up to 200 stories / 64 KB and 4000 characters per story text. Invalid live lists hold the previous valid playlist; all-unpublished is a valid empty list and drains the crawler.
+
+A field's `ycsCollection` metadata declares its record keys to the mapper. This is an optional extension in the custom SPX fork, not a standard SPX field type or an OGraf compliance declaration. Stock SPX can still edit the Stories textarea as JSON. Each item has `category`, `topic`, `subtopic`, and optional unique `id`. The separate scalar controls still work.
+
+Save mapping remains off air. Enable the Stories field link in the rundown and explicitly Play/Update to commit it. Switching to manual restores its saved JSON list. Later source refreshes keep visible/entering text moving and replace only the offscreen queue. The renderer continues after the last visible Story ID when possible; changing category/topic timing never pauses the crawl.
+
+Existing fork demo rundowns need the additive upgrade documented in the fork's YCS.md. Reimport/update the template definition for other SPX installations. Rebuild the SPX ZIP after template changes.
