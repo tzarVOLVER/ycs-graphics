@@ -22,7 +22,9 @@
     window.YCS_SPX_CONTROLLED = true;
     return enqueue(async function (ticker) {
       var value = (await mapping).mapSpxUpdate(input);
-      if (value.instanceId && value.instanceId !== ticker.getState().instanceId) await ticker.selectInstance(value.instanceId);
+      // Old saved imports may still send f0. It is compatibility metadata, not
+      // an output selector, in the shared stage-independent template.
+      if (value.instanceId && ticker.getState().instanceId && value.instanceId !== ticker.getState().instanceId) await ticker.selectInstance(value.instanceId);
       // Only the pilot template declares f13. Normal templates never connect.
       var fields = typeof input === 'string' ? JSON.parse(input) : input;
       if (Array.isArray(fields?.data)) fields = Object.fromEntries(fields.data.map(function (field) { return [field.id, field.value]; }));

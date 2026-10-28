@@ -1,14 +1,14 @@
-# YCS SPX ticker templates
+# YCS SPX ticker
 
 A separate [Current round data-link pilot](integrations/spx-data-link/README.md) tests chain-button Linked/Manual controls in an isolated SPX 1.4.1 rundown. It uses local test data; Sheets/API connectors are not included yet.
 
-Three SPX templates for 1920 x 1080 broadcast output:
+One reusable template for 1920 x 1080 broadcast output:
 
-- `graphics/ticker/YCS-Ticker-1.html` — broadcast-1, default layer 7
-- `graphics/ticker/YCS-Ticker-2.html` — broadcast-2, default layer 8
-- `graphics/ticker/YCS-Ticker-3.html` — broadcast-3, default layer 9
+- `graphics/ticker/ticker.html` — use the same file in every stage rundown.
 
-Each template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. The Stories field (`f14`) supplies a JSON story list; additional JSON (`f1`) remains available for other overrides. Each template is assigned to its own instance; route its layer to the intended output in SPX.
+The template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. The Stories field (`f14`) supplies a JSON story list; additional JSON (`f1`) remains available for other overrides. Each output owns an independent iframe and its rundown supplies its own values/mappings. The template has no fixed broadcast identity and loads neutral defaults with an empty playlist. Routing belongs to the controller, not the template. Stock SPX still requires its own layer/output routing.
+
+`YCS-Ticker-1.html`, `YCS-Ticker-2.html` and `YCS-Ticker-3.html` are retained for older imports and their original instance/layer defaults. New imports should use `ticker.html`. The fork's `node ycs/share-ticker.cjs` migrates existing saved imports and template-default mapping keys with exact backups, preserving fields, manual/linked modes and graphic IDs. Run it while SPX is stopped. Legacy hidden `f0` metadata is ignored by the shared template.
 
 ## Package
 
@@ -16,13 +16,13 @@ Each template starts hidden and uses SPX Play, Update and Stop. Controls include
 python scripts/package-spx.py
 ```
 
-The resulting `dist/YCS-SPX-Tickers.zip` contains the three HTML templates and all shared assets, CSS, JavaScript and data. Extract its `YCS` folder into SPX `ASSETS/templates/`, then import the three HTML files. Keep the shared folders beside them. No separate app or server is required beyond SPX.
+The resulting `dist/YCS-SPX-Tickers.zip` contains `ticker.html`, the legacy entry points and all shared assets, CSS, JavaScript and data. Extract its `YCS` folder into SPX `ASSETS/templates/`, then import `ticker.html`. Keep the shared folders beside it. No separate app or server is required beyond SPX.
 
 ## Layout and behavior
 
 The fixed bar is 1586 x 80 at x=202, y=974 on a 1920 x 1080 canvas, following the supplied broadcast reference. The logo and centered left labels use the same reference placement. The right text box has 9 px side margins; round text keeps its base size and shrinks horizontally only when needed. The crawler keeps moving through category/topic transitions. Text fitting automatically refreshes after text edits, font loads, CSS/layout changes, and hidden-to-visible transitions. Measurements use layout widths so renderer/display scaling does not cause clipped labels.
 
-Shared ticker data is in `graphics/ticker/data/shared.json`. Stage-specific data is in `data/stages/`, with per-instance mappings in `data/instances.json`. SPX fields override the resolved data. The ticker and header timing defaults are 145 px/s crawl speed, 180 ms topic entry delay, 180 ms header transitions and 10 ms label-swap gap.
+The shared template loads only `data/defaults.json`; event content comes from SPX saved fields and data mappings. The legacy entry points still resolve `data/shared.json`, `data/stages/` and `data/instances.json` for compatibility. The ticker and header timing defaults are 145 px/s crawl speed, 180 ms topic entry delay, 180 ms header transitions and 10 ms label-swap gap.
 
 ## Validation
 

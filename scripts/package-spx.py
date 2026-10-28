@@ -1,4 +1,4 @@
-"""Package the three SPX entry points with their shared runtime and assets."""
+"""Package the shared SPX template plus legacy entry points for old imports."""
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -8,7 +8,7 @@ OUTPUT = ROOT / 'dist' / 'YCS-SPX-Tickers.zip'
 
 
 def package():
-    files = [SOURCE / f'YCS-Ticker-{index}.html' for index in range(1, 4)]
+    files = [SOURCE / 'ticker.html'] + [SOURCE / f'YCS-Ticker-{index}.html' for index in range(1, 4)]
     files += [SOURCE / 'ticker.css', SOURCE / 'adapters' / 'spx.js']
     for folder in ['assets', 'src', 'data']:
         files += sorted(path for path in (SOURCE / folder).rglob('*') if path.is_file())
@@ -20,9 +20,11 @@ def package():
             archive.write(path, 'YCS/ticker/' + path.relative_to(SOURCE).as_posix())
         archive.writestr('YCS/ticker/INSTALL.txt',
             'Extract the YCS folder into SPX ASSETS/templates/.\n'
-            'Import YCS-Ticker-1.html, YCS-Ticker-2.html and YCS-Ticker-3.html.\n'
+            'Import ticker.html once; reuse it in each stage rundown with its own data.\n'
             'Use 1920 x 1080 output. Templates start hidden; control with SPX Play/Update/Stop.\n'
-            'Default layers: 7, 8 and 9. Route each layer to its intended output.\n'
+            'The YCS fork routes independent stage outputs; ticker uses the ticker slot.\n'
+            'Stock SPX installations still need their own layer/output routing.\n'
+            'YCS-Ticker-1/2/3.html are retained only for compatibility with older imports.\n'
             'Keep all shared folders beside the HTML files.\n')
     print(OUTPUT)
 

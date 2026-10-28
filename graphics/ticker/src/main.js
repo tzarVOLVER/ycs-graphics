@@ -2,9 +2,11 @@ import { createDataStore } from './data.js';
 import { TickerRenderer } from './renderer.js';
 
 const renderer = new TickerRenderer(document.getElementById('ticker'));
-const templateInstanceId = document.documentElement.dataset.instance || 'broadcast-1';
+// Legacy entry points keep their own defaults. The shared template has no
+// broadcast identity: its containing output owns routing and SPX owns content.
+const templateInstanceId = document.documentElement.dataset.instance || null;
 let instanceId = templateInstanceId;
-let stageId;
+let stageId = new URLSearchParams(location.search).get('ycsStage') || null;
 let store;
 let disposed = false;
 let loadRevision = 0;
@@ -17,6 +19,14 @@ async function readJson(path) {
 
 async function loadInstance(id) {
   const revision = ++loadRevision;
+  if (id === null) {
+    const defaults = await readJson('../data/defaults.json');
+    if (disposed || revision !== loadRevision) return;
+    const next = createDataStore(defaults);
+    renderer.apply(next.get());
+    store = next;
+    return;
+  }
   const [config, shared] = await Promise.all([readJson('../data/instances.json'), readJson('../data/shared.json')]);
   if (!Object.hasOwn(config, id)) throw new Error(`Unknown instance: ${id}`);
   const selected = config[id];
