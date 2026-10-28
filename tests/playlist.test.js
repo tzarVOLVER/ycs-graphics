@@ -25,3 +25,17 @@ test('live playlist edits preserve visible stories, offset, transforms and heade
   assert.equal(children.length,2);assert.equal(children[1].entry.subtopic,'b','visible text remains untouched');assert.equal(renderer.nextIndex,2,'continue after the visible Story ID');assert.equal(renderer.offset,-90);assert.equal(track.style.transform,'translateX(-90px)');assert.equal(renderer.headerTimer,45);assert.equal(renderer.headerKey,'existing header');assert.equal(renderer.paused,false);
   TickerRenderer.prototype.apply.call(renderer,{tickerItems:[],topicEntryDelayMs:180,headerTransitionMs:180});assert.equal(children.length,2,'an empty playlist drains visible text naturally');assert.equal(renderer.items.length,0);
 });
+
+test('the first SPX playlist replaces hidden bootstrap stories and headers before Play',()=>{
+  const children=[{entry:story('sample'),offsetLeft:0}],track={children,style:{transform:'translateX(-90px)'},replaceChildren(){children.length=0;},get firstElementChild(){return children[0];}};
+  const elements=Object.fromEntries(['logo','bg','date','location','status','round','remaining','right','category','topic','topic-inner'].map(id=>[id,{textContent:'SAMPLE',classList:{toggle(){},remove(){}}}]));
+  const headers=[],resets=[];
+  const renderer={hasShown:false,track,offset:-90,nextIndex:1,headerKey:'sample',headerTimer:null,timing:{reset:item=>resets.push(item)},root:{style:{setProperty(){}}},$:id=>elements[id],fitRound(){},fillTrack(){if(this.items.length)children.push({entry:this.items[this.nextIndex++]});},setHeader(item,instant){headers.push({item,instant});this.headerKey=item.id;},seedPositions(){this.seeded=true;},data:{tickerItems:[story('sample')]}};
+  const fresh=story('mapped','Mapped Orlando story');
+  TickerRenderer.prototype.apply.call(renderer,{tickerItems:[fresh],topicEntryDelayMs:180,headerTransitionMs:180});
+  assert.deepEqual(children.map(node=>node.entry),[fresh]);
+  assert.equal(renderer.offset,0);assert.equal(track.style.transform,'translateX(0px)');
+  assert.deepEqual(headers,[{item:fresh,instant:true}]);assert.deepEqual(resets,[null,fresh]);assert.equal(renderer.seeded,true);
+  TickerRenderer.prototype.apply.call(renderer,{tickerItems:[],topicEntryDelayMs:180,headerTransitionMs:180});
+  assert.equal(children.length,0);assert.equal(elements.category.textContent,'');assert.equal(elements.topic.textContent,'');assert.equal(renderer.headerKey,null);
+});

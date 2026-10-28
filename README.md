@@ -43,4 +43,8 @@ A field's `ycsCollection` metadata declares its record keys to the mapper. This 
 
 Save mapping remains off air. Enable the Stories field link in the rundown and explicitly Play/Update to commit it. Switching to manual restores its saved JSON list. Later source refreshes keep visible/entering text moving and replace only the offscreen queue. The renderer continues after the last visible Story ID when possible; changing category/topic timing never pauses the crawl.
 
+Before the first Play, a mapped story list replaces the hidden bootstrap queue and header completely, so bundled sample stories cannot enter program. After the ticker has been shown, live updates retain the continuous-crawl behavior described above.
+
+For a three-stage test on one computer, the fork provides `npm run ycs:rehearsal` and a separate loopback monitor at `http://127.0.0.1:5661/rehearsal`. It uses these templates with disposable rundowns and simulated Sheets/JSON data. See the fork's YCS.md for playback, source-outage, reload/reconnect and server-restart checks; it leaves saved event configuration untouched.
+
 Existing fork demo rundowns need the additive upgrade documented in the fork's YCS.md. Reimport/update the template definition for other SPX installations. Rebuild the SPX ZIP after template changes.

@@ -15,6 +15,7 @@ export class TickerRenderer {
     this.items = [];
     this.paused = false;
     this.disposed = false;
+    this.hasShown = false;
     this.headerTimer = null;
     this.frame = null;
     this.headerKey = null;
@@ -54,6 +55,28 @@ export class TickerRenderer {
     this.$('right').classList.toggle('no-remaining', !data.showRoundsRemaining);
     this.fitRound();
     if (playlistChanged) {
+      if (this.hasShown === false) {
+        // The initial SPX update arrives after bootstrap data has filled the
+        // hidden track. Nothing has aired yet: replace that sample content in
+        // full before Play rather than preserving it as a visible live story.
+        this.track.replaceChildren();
+        this.offset = 0;
+        this.track.style.transform = 'translateX(0px)';
+        this.items = data.tickerItems;
+        this.nextIndex = 0;
+        clearTimeout(this.headerTimer);
+        this.headerTimer = null;
+        this.headerKey = null;
+        this.timing.reset(null);
+        this.$('category').textContent = '';
+        this.$('topic').textContent = '';
+        this.$('topic-inner').classList.remove('out');
+        this.fillTrack();
+        const first = this.track.firstElementChild;
+        if (first) { this.setHeader(first.entry, true); this.timing.reset(first.entry); }
+        this.seedPositions();
+        return;
+      }
       // Preserve everything already entering/on screen. Replace only the unseen
       // tail so an unpublished story does not wait through the old lookahead.
       for (const node of [...this.track.children]) {
@@ -179,6 +202,7 @@ export class TickerRenderer {
   }
 
   show() {
+    this.hasShown = true;
     this.root.classList.add('visible');
     this.fitRound();
     this.scheduleFit();
