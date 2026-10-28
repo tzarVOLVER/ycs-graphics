@@ -32,6 +32,8 @@ node --test tests/*.test.js
 
 SPX field/lifecycle bridges are tested in isolation. Live SPX playout still needs host validation. This is an SPX package; OGraf compliance is not claimed. OGraf preparation notes remain in `graphics/ticker/adapters/ograf/README.md` and are excluded from the SPX ZIP.
 
+The ticker and controller share generated data helpers and the same contract fixtures. See [contracts/README.md](contracts/README.md) for regeneration and cross-repository checks. Both repositories remain independently deployable.
+
 
 ## Linked story playlists
 
