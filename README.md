@@ -1,4 +1,39 @@
-# YCS SPX ticker
+# YCS SPX graphics
+
+## Modular lower third
+
+Import `graphics/lower-third/lower-third.html` for a fixed 1920 × 1080 lower third.
+Choose a 1–4 nameplate layout, enter each name/title and use its Show checkbox.
+Hiding one plate keeps the other positions fixed. Layouts are independent of the
+stage: reuse this same template in all three rundowns with separate values.
+
+In the YCS SPX fork, `ycsPreviewOnEdit: false` keeps checkbox, text, layout and
+link edits as drafts. Explicit Focus/Preview shows the graphic in Preview; Play
+takes it to Program; Update on air applies the chosen plates without replaying
+the entrance. Save draft does not change Program. Companion uses saved values,
+so save edits before playing with Companion. Stock SPX controls its own automatic
+preview behavior and does not implement this optional metadata.
+
+All plates use one fixed 220 ms slide/fade on Play/Stop. There are no appearance
+or timing controls. Names and titles shrink horizontally when needed, never
+stretch short labels, and refit after font/layout changes. Fonts and fitting/data
+helpers are reused with the ticker. Text is rendered as plain text.
+
+```powershell
+python scripts/package-spx.py --graphic lower-third
+```
+
+Extract the entire `YCS` folder from `dist/YCS-SPX-Lower-Third.zip` into SPX
+`ASSETS/templates/`, then import `YCS/lower-third/lower-third.html`. Keep the
+included `YCS/shared` and `YCS/ticker/assets` folders in place. The graphic starts
+hidden with blank names/titles. It uses the fork's `lower-third` slot; stock SPX
+defaults to layer 2. This is an SPX template, without an OGraf compliance claim.
+
+The reference layout uses 396 × 96 px nameplates at y=920. Two-person positions
+are x=352 and x=1170. Fixed layout positions live in `graphics/lower-third/data.js`;
+visual dimensions and animation live in its CSS.
+
+## Ticker
 
 A separate [Current round data-link pilot](integrations/spx-data-link/README.md) tests chain-button Linked/Manual controls in an isolated SPX 1.4.1 rundown. It uses local test data; Sheets/API connectors are not included yet.
 

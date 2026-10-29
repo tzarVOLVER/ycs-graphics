@@ -33,7 +33,13 @@ export async function artifacts() {
 
 export async function syncContracts({ spxRoot, check = false } = {}) {
   const files = await artifacts();
-  const targets = [[path.join(root, 'graphics/ticker/src/data-contract.js'), files.esm]];
+  const targets = [
+    [path.join(root, 'graphics/shared/data-contract.js'), files.esm],
+    [
+      path.join(root, 'graphics/ticker/src/data-contract.js'),
+      "// Shared by the ticker and lower third.\nexport * from '../../shared/data-contract.js';\n"
+    ]
+  ];
   if (spxRoot) {
     const manifest = {
       version: 1,

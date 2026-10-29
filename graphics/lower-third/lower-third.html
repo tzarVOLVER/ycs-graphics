@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>YCS Lower Third</title>
+    <link rel="stylesheet" href="./lower-third.css" />
+    <script>
+      window.SPXGCTemplateDefinition = {
+        description: 'YCS Lower Third',
+        playserver: 'OVERLAY',
+        playchannel: '1',
+        playlayer: '2',
+        webplayout: '2',
+        steps: '1',
+        out: 'manual',
+        uicolor: '2',
+        dataformat: 'json',
+        ycsSlot: 'lower-third',
+        ycsPreviewOnEdit: false,
+        DataFields: [
+          {
+            field: 'f2',
+            ftype: 'dropdown',
+            title: 'Layout',
+            value: '2',
+            items: [
+              { text: '1 nameplate', value: '1' },
+              { text: '2 nameplates', value: '2' },
+              { text: '3 nameplates', value: '3' },
+              { text: '4 nameplates', value: '4' }
+            ]
+          },
+          { field: 'f3', ftype: 'checkbox', title: 'Show nameplate 1', value: '1' },
+          { field: 'f4', ftype: 'textfield', title: 'Name 1', value: '' },
+          { field: 'f5', ftype: 'textfield', title: 'Title 1', value: '' },
+          { field: 'f6', ftype: 'checkbox', title: 'Show nameplate 2', value: '1' },
+          { field: 'f7', ftype: 'textfield', title: 'Name 2', value: '' },
+          { field: 'f8', ftype: 'textfield', title: 'Title 2', value: '' },
+          { field: 'f9', ftype: 'checkbox', title: 'Show nameplate 3', value: '1' },
+          { field: 'f10', ftype: 'textfield', title: 'Name 3', value: '' },
+          { field: 'f11', ftype: 'textfield', title: 'Title 3', value: '' },
+          { field: 'f12', ftype: 'checkbox', title: 'Show nameplate 4', value: '1' },
+          { field: 'f13', ftype: 'textfield', title: 'Name 4', value: '' },
+          { field: 'f14', ftype: 'textfield', title: 'Title 4', value: '' }
+        ]
+      };
+    </script>
+  </head>
+  <body>
+    <div id="lower-third" aria-label="Lower third">
+      <section class="nameplate" aria-label="Nameplate 1">
+        <div class="name-row">
+          <div class="text-box"><span class="fit-text name"></span></div>
+        </div>
+        <div class="title-row">
+          <div class="text-box"><span class="fit-text title"></span></div>
+        </div>
+      </section>
+      <section class="nameplate" aria-label="Nameplate 2">
+        <div class="name-row">
+          <div class="text-box"><span class="fit-text name"></span></div>
+        </div>
+        <div class="title-row">
+          <div class="text-box"><span class="fit-text title"></span></div>
+        </div>
+      </section>
+      <section class="nameplate" aria-label="Nameplate 3" hidden>
+        <div class="name-row">
+          <div class="text-box"><span class="fit-text name"></span></div>
+        </div>
+        <div class="title-row">
+          <div class="text-box"><span class="fit-text title"></span></div>
+        </div>
+      </section>
+      <section class="nameplate" aria-label="Nameplate 4" hidden>
+        <div class="name-row">
+          <div class="text-box"><span class="fit-text name"></span></div>
+        </div>
+        <div class="title-row">
+          <div class="text-box"><span class="fit-text title"></span></div>
+        </div>
+      </section>
+    </div>
+    <script src="./spx.js"></script>
+  </body>
+</html>

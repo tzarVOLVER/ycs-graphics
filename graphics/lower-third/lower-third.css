@@ -1,0 +1,78 @@
+@font-face {
+  font-family: Apotek;
+  src: url('../ticker/assets/ApotekComp-Regular.otf') format('opentype');
+  font-display: block;
+}
+@font-face {
+  font-family: Anybody;
+  src: url('../ticker/assets/Anybody-Bold.otf') format('opentype');
+  font-display: block;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+#lower-third {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+#lower-third.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.nameplate {
+  position: absolute;
+  top: 920px;
+  width: 396px;
+  height: 96px;
+  border: 2px solid #f5cf45;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #202020;
+}
+.nameplate[hidden] {
+  display: none;
+}
+.name-row,
+.title-row {
+  padding: 0 24px;
+  overflow: hidden;
+}
+.name-row {
+  height: 60px;
+  color: #fff;
+  font:
+    44px/60px Apotek,
+    sans-serif;
+}
+.title-row {
+  height: 32px;
+  background: #f5cf45;
+  color: #111;
+  font:
+    20px/32px Anybody,
+    sans-serif;
+}
+.text-box {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.fit-text {
+  display: inline-block;
+  white-space: nowrap;
+  transform-origin: left center;
+}
