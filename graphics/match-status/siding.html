@@ -90,36 +90,66 @@
     <div id="match-status" data-variant="siding" aria-label="Duelists siding">
       <div class="graphic-reveal">
         <img class="blue-panel" src="./assets/siding-blue.svg" alt="" data-node-id="1:74" />
-        <div class="red-panel" aria-hidden="true"><div class="red-inner"></div></div>
-        <div class="text-box name-box name-left">
-          <span class="fit-text" data-fit data-field="leftName"></span>
+        <div class="red-panel" aria-hidden="true" data-node-id="1:82">
+          <div class="red-inner"></div>
         </div>
-        <div class="text-box name-box name-right">
-          <span class="fit-text" data-fit data-field="rightName"></span>
-        </div>
-        <div class="flag-box flag-left">
-          <img class="flag" data-image="leftFlag" src="./assets/us.png" alt="Left player flag" />
-        </div>
-        <div class="flag-box flag-right">
-          <img class="flag" data-image="rightFlag" src="./assets/us.png" alt="Right player flag" />
-        </div>
-        <div class="text-box score-box score-left">
-          <span class="fit-text" data-fit data-field="leftScore"></span>
-        </div>
-        <div class="text-box score-box score-right">
-          <span class="fit-text" data-fit data-field="rightScore"></span>
-        </div>
-        <div class="text-box vs-box"><span class="fit-text" data-fit>VS</span></div>
-        <div class="round-box">
-          <div class="text-box round-text-box">
-            <span class="fit-text" data-fit data-field="currentRound"></span>
-          </div>
-          <div class="text-box remaining-box">
-            <span class="fit-text" data-fit data-field="roundsRemaining"></span>
+        <div class="player-mask player-left">
+          <div class="player-info">
+            <div class="text-box name-box name-left">
+              <span class="fit-text" data-fit data-field="leftName"></span>
+            </div>
+            <div class="flag-box flag-left">
+              <img
+                class="flag"
+                data-image="leftFlag"
+                src="./assets/us.png"
+                alt="Left player flag"
+              />
+            </div>
           </div>
         </div>
-        <div class="text-box caption-box">
-          <span class="fit-text" data-fit>DUELISTS SIDING</span>
+        <div class="player-mask player-right">
+          <div class="player-info">
+            <div class="text-box name-box name-right">
+              <span class="fit-text" data-fit data-field="rightName"></span>
+            </div>
+            <div class="flag-box flag-right">
+              <img
+                class="flag"
+                data-image="rightFlag"
+                src="./assets/us.png"
+                alt="Right player flag"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="score-mask score-left">
+          <div class="text-box score-box">
+            <span class="fit-text" data-fit data-field="leftScore"></span>
+          </div>
+        </div>
+        <div class="score-mask score-right">
+          <div class="text-box score-box">
+            <span class="fit-text" data-fit data-field="rightScore"></span>
+          </div>
+        </div>
+        <div class="vs-mask">
+          <div class="text-box vs-box"><span class="fit-text" data-fit>VS</span></div>
+        </div>
+        <div class="round-mask">
+          <div class="round-box" data-node-id="1:89">
+            <div class="text-box round-text-box">
+              <span class="fit-text" data-fit data-field="currentRound"></span>
+            </div>
+            <div class="text-box remaining-box">
+              <span class="fit-text" data-fit data-field="roundsRemaining"></span>
+            </div>
+          </div>
+        </div>
+        <div class="caption-mask">
+          <div class="text-box caption-box">
+            <span class="fit-text" data-fit>DUELISTS SIDING</span>
+          </div>
         </div>
       </div>
     </div>

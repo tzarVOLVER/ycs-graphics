@@ -1,5 +1,6 @@
 import { fitHorizontal } from '../shared/fit.js';
 import { defaults, applyFields } from './data.js';
+import { createMotion } from './motion.js';
 
 export function createMatchStatus(root) {
   let state = defaults(root.dataset.variant),
@@ -7,6 +8,7 @@ export function createMatchStatus(root) {
     frame = null;
   const doc = root.ownerDocument,
     view = doc.defaultView;
+  const motion = createMotion(root);
   const labels = [...root.querySelectorAll('[data-fit]')];
   const images = [...root.querySelectorAll('[data-image]')];
   const round = root.querySelector('.remaining-box');
@@ -49,16 +51,17 @@ export function createMatchStatus(root) {
       render();
     },
     play() {
-      root.classList.add('visible');
+      motion.play();
       scheduleFit();
     },
     stop() {
-      root.classList.remove('visible');
+      motion.stop();
     },
     getState() {
       return { ...state };
     },
     dispose() {
+      motion.dispose();
       disposed = true;
       if (frame !== null) view.cancelAnimationFrame(frame);
       resize.disconnect();

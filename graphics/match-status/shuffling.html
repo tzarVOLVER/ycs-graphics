@@ -75,31 +75,58 @@
       <div class="graphic-reveal">
         <div class="backdrop" aria-hidden="true" data-node-id="1:43"></div>
         <img class="blue-panel" src="./assets/shuffling-blue.svg" alt="" data-node-id="1:47" />
-        <div class="red-panel" aria-hidden="true"><div class="red-inner"></div></div>
-        <div class="text-box name-box name-left">
-          <span class="fit-text" data-fit data-field="leftName"></span>
+        <div class="red-panel" aria-hidden="true" data-node-id="1:54">
+          <div class="red-inner"></div>
         </div>
-        <div class="text-box name-box name-right">
-          <span class="fit-text" data-fit data-field="rightName"></span>
-        </div>
-        <div class="flag-box flag-left">
-          <img class="flag" data-image="leftFlag" src="./assets/us.png" alt="Left player flag" />
-        </div>
-        <div class="flag-box flag-right">
-          <img class="flag" data-image="rightFlag" src="./assets/us.png" alt="Right player flag" />
-        </div>
-
-        <div class="text-box vs-box"><span class="fit-text" data-fit>VS</span></div>
-        <div class="round-box">
-          <div class="text-box round-text-box">
-            <span class="fit-text" data-fit data-field="currentRound"></span>
-          </div>
-          <div class="text-box remaining-box">
-            <span class="fit-text" data-fit data-field="roundsRemaining"></span>
+        <div class="player-mask player-left" data-node-id="4:4">
+          <div class="player-info" data-node-id="4:6">
+            <div class="text-box name-box name-left">
+              <span class="fit-text" data-fit data-field="leftName"></span>
+            </div>
+            <div class="flag-box flag-left">
+              <img
+                class="flag"
+                data-image="leftFlag"
+                src="./assets/us.png"
+                alt="Left player flag"
+              />
+            </div>
           </div>
         </div>
-        <div class="text-box caption-box">
-          <span class="fit-text" data-fit>DUELISTS SHUFFLING</span>
+        <div class="player-mask player-right" data-node-id="6:4">
+          <div class="player-info" data-node-id="6:5">
+            <div class="flag-box flag-right">
+              <img
+                class="flag"
+                data-image="rightFlag"
+                src="./assets/us.png"
+                alt="Right player flag"
+              />
+            </div>
+            <div class="text-box name-box name-right">
+              <span class="fit-text" data-fit data-field="rightName"></span>
+            </div>
+          </div>
+        </div>
+        <div class="vs-mask">
+          <div class="text-box vs-box" data-node-id="1:59">
+            <span class="fit-text" data-fit>VS</span>
+          </div>
+        </div>
+        <div class="round-mask" data-node-id="4:600">
+          <div class="round-box" data-node-id="1:60">
+            <div class="text-box round-text-box">
+              <span class="fit-text" data-fit data-field="currentRound"></span>
+            </div>
+            <div class="text-box remaining-box">
+              <span class="fit-text" data-fit data-field="roundsRemaining"></span>
+            </div>
+          </div>
+        </div>
+        <div class="caption-mask" data-node-id="4:594">
+          <div class="text-box caption-box" data-node-id="1:44">
+            <span class="fit-text" data-fit>DUELISTS SHUFFLING</span>
+          </div>
         </div>
       </div>
     </div>

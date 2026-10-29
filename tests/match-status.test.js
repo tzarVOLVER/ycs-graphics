@@ -4,6 +4,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
 import { defaults, applyFields } from '../graphics/match-status/data.js';
 import { createMatchStatus } from '../graphics/match-status/main.js';
+import { createMotion } from '../graphics/match-status/motion.js';
 
 function harness(variant = 'siding') {
   const classes = new Set(),
@@ -58,6 +59,7 @@ function harness(variant = 'siding') {
   }));
   const remaining = { hidden: false };
   const root = {
+    getAnimations: () => [],
     dataset: { variant },
     ownerDocument: { defaultView: view, fonts },
     querySelectorAll: (selector) => (selector === '[data-fit]' ? labels : images),
@@ -119,6 +121,77 @@ test('shuffling and siding accept classic SPX payloads with independent fields a
     } else assert.equal(Object.hasOwn(state, 'leftScore'), false);
     assert.equal(Object.hasOwn(state, 'caption'), false);
   }
+});
+
+function motionHarness(times = [2000]) {
+  const classes = new Set();
+  const tracks = times.map((currentTime) => {
+    let finish;
+    return {
+      currentTime,
+      playbackRate: 1,
+      effect: { getTiming: () => ({ duration: 2000 }) },
+      finished: new Promise((resolve) => {
+        finish = resolve;
+      }),
+      finish: () => finish(),
+      reverse() {
+        this.playbackRate = -1;
+      },
+      play() {
+        this.played = true;
+      },
+      cancel() {
+        this.cancelled = true;
+        finish();
+      }
+    };
+  });
+  const root = {
+    getAnimations: () => tracks,
+    classList: {
+      add: (name) => classes.add(name),
+      remove: (name) => classes.delete(name)
+    }
+  };
+  return { api: createMotion(root), classes, tracks };
+}
+
+test('Stop skips the timeline hold, reverses from the current frame, then hides', async () => {
+  const r = motionHarness([2000, 100]);
+  r.api.play();
+  r.api.stop();
+  assert.equal(r.tracks[0].currentTime, 448.52);
+  assert.equal(r.tracks[1].currentTime, 100);
+  assert.ok(r.tracks.every((track) => track.playbackRate === -2));
+  assert.equal(r.classes.has('visible'), true, 'exit remains visible until finished');
+  r.tracks.forEach((track) => track.finish());
+  await new Promise(setImmediate);
+  assert.equal(r.classes.has('visible'), false);
+});
+
+test('rapid Play/Stop/Play resumes without a stale exit hiding the graphic', async () => {
+  const r = motionHarness([0]);
+  r.api.play();
+  r.api.stop();
+  assert.equal(r.tracks[0].currentTime, 0.001, 'avoid reverse auto-rewind at zero');
+  r.api.play();
+  assert.equal(r.tracks[0].playbackRate, 1);
+  assert.equal(r.tracks[0].played, true);
+  r.tracks[0].finish();
+  await new Promise(setImmediate);
+  assert.equal(r.classes.has('visible'), true);
+  r.api.dispose();
+  assert.equal(r.tracks[0].cancelled, true);
+  assert.equal(r.classes.has('visible'), false);
+});
+
+test('reduced-motion with no animation tracks shows and stops immediately', () => {
+  const r = motionHarness([]);
+  r.api.play();
+  assert.equal(r.classes.has('visible'), true);
+  r.api.stop();
+  assert.equal(r.classes.has('visible'), false);
 });
 
 test('invalid updates fail atomically and all supported checkbox false values remain false', () => {

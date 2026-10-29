@@ -38,11 +38,9 @@ body {
   inset: 0;
   pointer-events: none;
   visibility: hidden;
-  transition: visibility 0s linear 240ms;
 }
 #match-status.visible {
   visibility: visible;
-  transition-delay: 0s;
 }
 .graphic-reveal {
   position: absolute;
@@ -50,13 +48,6 @@ body {
   top: 866px;
   width: 1125px;
   height: 189px;
-  clip-path: inset(0 50%);
-  transition: clip-path 180ms cubic-bezier(0.65, 0, 0.35, 1) 60ms;
-}
-.visible .graphic-reveal {
-  clip-path: inset(0 0);
-  transition-duration: 340ms;
-  transition-delay: 0s;
 }
 .backdrop {
   position: absolute;
@@ -71,6 +62,7 @@ body {
   position: absolute;
   left: 0;
   top: 58px;
+  transform-origin: 100% 50%;
 }
 .red-panel {
   position: absolute;
@@ -80,6 +72,7 @@ body {
   height: 67px;
   border-radius: 8px;
   background: #f62162;
+  transform-origin: 0% 50%;
 }
 .red-inner {
   position: absolute;
@@ -90,18 +83,30 @@ body {
   border-radius: 8px;
   background: #212121;
 }
+.player-mask {
+  position: absolute;
+  top: 68px;
+  height: 39px;
+  overflow: hidden;
+}
+.player-left {
+  left: 5px;
+  width: 467px;
+}
+.player-right {
+  left: 637px;
+  width: 474px;
+}
+/* Animated Figma groups need real boxes, rather than display: contents. */
+.player-info {
+  position: absolute;
+  inset: 0;
+}
 .text-box {
   position: absolute;
   display: flex;
   align-items: center;
   overflow: hidden;
-  clip-path: inset(0 50%);
-  transition: clip-path 120ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-.visible .text-box {
-  clip-path: inset(0 0);
-  transition-duration: 260ms;
-  transition-delay: 140ms;
 }
 .fit-text {
   display: inline-block;
@@ -111,24 +116,24 @@ body {
   text-transform: uppercase;
 }
 .name-box {
-  top: 59px;
-  height: 68px;
+  top: 6px;
+  height: 38px;
   color: #fff;
   font:
     700 39px MatchAnybody,
     sans-serif;
 }
 .name-left {
-  left: 71px;
-  width: 342px;
+  left: 5px;
+  width: 403px;
   justify-content: flex-end;
 }
 .name-left .fit-text {
   transform-origin: right center;
 }
 .name-right {
-  left: 707px;
-  width: 343px;
+  left: 72px;
+  width: 398px;
   justify-content: flex-start;
 }
 .name-right .fit-text {
@@ -136,23 +141,16 @@ body {
 }
 .flag-box {
   position: absolute;
-  top: 77px;
+  top: 9px;
   width: 46px;
   height: 28px;
   overflow: hidden;
-  clip-path: inset(0 50%);
-  transition: clip-path 120ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-.visible .flag-box {
-  clip-path: inset(0 0);
-  transition-duration: 260ms;
-  transition-delay: 140ms;
 }
 .flag-left {
-  left: 426px;
+  left: 421px;
 }
 .flag-right {
-  left: 649px;
+  left: 15px;
 }
 .flag {
   display: block;
@@ -163,11 +161,16 @@ body {
 [hidden] {
   display: none !important;
 }
-.vs-box {
+.vs-mask {
+  position: absolute;
   left: 515px;
   top: 72px;
   width: 96px;
   height: 45px;
+  overflow: hidden;
+}
+.vs-box {
+  inset: 0;
   justify-content: center;
   color: #fff;
   font:
@@ -180,12 +183,17 @@ body {
 .caption-box .fit-text {
   transform-origin: center;
 }
-.visible .vs-box {
-  transition-delay: 80ms;
+.round-mask {
+  position: absolute;
+  left: 413px;
+  top: 0;
+  width: 296px;
+  height: 54px;
+  overflow: hidden;
 }
 .round-box {
   position: absolute;
-  left: 424px;
+  left: 11px;
   top: 0;
   width: 274px;
   height: 49px;
@@ -217,25 +225,34 @@ body {
     700 13px MatchAnybody,
     sans-serif;
 }
+.caption-mask {
+  position: absolute;
+  left: 397px;
+  top: 133px;
+  width: 331px;
+  height: 38px;
+  overflow: hidden;
+}
 .caption-box {
-  left: 425px;
-  top: 129px;
+  left: 28px;
+  top: 0;
   width: 275px;
-  height: 46px;
+  height: 38px;
   justify-content: center;
   color: #fff;
   font:
     500 41px MatchApotek,
     sans-serif;
 }
-.visible .caption-box {
-  transition-delay: 220ms;
-  transition-duration: 240ms;
-}
-.score-box {
+.score-mask {
+  position: absolute;
   top: 69px;
   width: 65px;
   height: 46px;
+  overflow: hidden;
+}
+.score-box {
+  inset: 0;
   justify-content: center;
   color: #fff;
   font:
@@ -253,20 +270,127 @@ body {
   width: 420px;
 }
 [data-variant='siding'] .name-box {
-  top: 58px;
+  top: 8px;
+  width: 342px;
 }
 [data-variant='siding'] .name-left {
-  left: 8px;
+  left: 3px;
 }
 [data-variant='siding'] .name-right {
-  left: 775px;
+  left: 138px;
+  width: 343px;
+}
+[data-variant='siding'] .player-right {
+  width: 483px;
 }
 [data-variant='siding'] .flag-box {
-  top: 76px;
+  top: 8px;
 }
 [data-variant='siding'] .flag-left {
-  left: 363px;
+  left: 358px;
 }
 [data-variant='siding'] .flag-right {
-  left: 717px;
+  left: 80px;
+}
+
+/* Figma 1:20 export: exact curves/values, with an SPX hold instead of looping.
+   Round and score tracks extend the example; VS uses a mask, without opacity. */
+.visible .backdrop,
+.visible .red-panel {
+  animation: panel-open 2s linear 1 forwards;
+}
+.visible .blue-panel {
+  animation: blue-open 2s linear 1 forwards;
+}
+.visible .player-info {
+  animation: player-rise 2s linear 1 forwards;
+}
+.visible .caption-box {
+  animation: caption-drop 2s linear 1 forwards;
+}
+.visible .vs-box {
+  animation: vs-rise 2s linear 1 forwards;
+}
+.visible .round-box {
+  animation: round-rise 2s linear 1 forwards;
+}
+.visible .score-box {
+  animation: score-rise 2s linear 1 forwards;
+}
+@keyframes panel-open {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    scale: 0 1;
+  }
+  22.426%,
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes blue-open {
+  0% {
+    animation-timing-function: cubic-bezier(0.069, 0.24, 0, 1);
+    scale: 0 1;
+  }
+  22.426%,
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes player-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 31px;
+  }
+  22.426%,
+  100% {
+    translate: 0px -3px;
+  }
+}
+@keyframes caption-drop {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px -34px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@keyframes vs-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 10px;
+    clip-path: inset(100% 0 0);
+  }
+  22.426%,
+  100% {
+    translate: 0px -1px;
+    clip-path: inset(0);
+  }
+}
+@keyframes round-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 54px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@keyframes score-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 46px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #match-status.visible * {
+    animation: none !important;
+  }
 }
