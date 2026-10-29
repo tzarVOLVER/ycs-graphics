@@ -184,9 +184,20 @@ test('template declares four Show controls with draft-only edits and no appearan
     new URL('../graphics/lower-third/lower-third.html', import.meta.url),
     'utf8'
   );
-  const definition = runInNewContext('(' + html.match(/window\.SPXGCTemplateDefinition = (\{[\s\S]*?\});/)[1] + ')');
+  const definition = runInNewContext(
+    '(' + html.match(/window\.SPXGCTemplateDefinition = (\{[\s\S]*?\});/)[1] + ')'
+  );
   assert.equal(definition.ycsPreviewOnEdit, false);
   assert.equal(definition.ycsSlot, 'lower-third');
+  const initial = applyFields(
+    defaults(),
+    Object.fromEntries(definition.DataFields.map((field) => [field.field, field.value]))
+  );
+  assert.deepEqual(
+    initial,
+    defaults(),
+    'new SPX imports and direct renderer startup have the same placeholder text'
+  );
   assert.equal(definition.DataFields.filter((field) => field.ftype === 'checkbox').length, 4);
   assert.equal(definition.DataFields.filter((field) => field.ftype === 'textfield').length, 8);
   assert.equal(

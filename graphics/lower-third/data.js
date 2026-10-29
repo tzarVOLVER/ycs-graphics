@@ -11,7 +11,11 @@ export const LAYOUTS = Object.freeze({
 export function defaults() {
   return {
     layout: 2,
-    plates: Array.from({ length: 4 }, () => ({ enabled: true, name: '', title: '' }))
+    plates: ['HOST', 'COMMENTATOR', 'ANALYST', 'GUEST'].map((title) => ({
+      enabled: true,
+      name: 'FIRST LAST',
+      title
+    }))
   };
 }
 

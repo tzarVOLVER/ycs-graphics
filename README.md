@@ -14,8 +14,11 @@ the entrance. Save draft does not change Program. Companion uses saved values,
 so save edits before playing with Companion. Stock SPX controls its own automatic
 preview behavior and does not implement this optional metadata.
 
-All plates use one fixed 220 ms slide/fade on Play/Stop. There are no appearance
-or timing controls. Names and titles shrink horizontally when needed, never
+All plates use one fixed reveal sequence: the panel wipes open from the left,
+then the name and title reveal through separate masks with a short horizontal
+text movement. Exit retracts text first, then the panel (240 ms total, within
+the existing SPX slot retirement window). No opacity fades or whole-panel fly-in
+are used. There are no appearance or timing controls. Names and titles shrink horizontally when needed, never
 stretch short labels, and refit after font/layout changes. Fonts and fitting/data
 helpers are reused with the ticker. Text is rendered as plain text.
 
@@ -26,7 +29,9 @@ python scripts/package-spx.py --graphic lower-third
 Extract the entire `YCS` folder from `dist/YCS-SPX-Lower-Third.zip` into SPX
 `ASSETS/templates/`, then import `YCS/lower-third/lower-third.html`. Keep the
 included `YCS/shared` and `YCS/ticker/assets` folders in place. The graphic starts
-hidden with blank names/titles. It uses the fork's `lower-third` slot; stock SPX
+hidden with `FIRST LAST` name placeholders and HOST / COMMENTATOR / ANALYST / GUEST
+title defaults for new imports. Existing saved fields are preserved, including
+intentionally blank fields. It uses the fork's `lower-third` slot; stock SPX
 defaults to layer 2. This is an SPX template, without an OGraf compliance claim.
 
 The reference layout uses 396 × 96 px nameplates at y=920. Two-person positions
