@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>YCS Shuffling</title>
+    <link rel="stylesheet" href="./match-status.css" />
+    <script>
+      window.SPXGCTemplateDefinition = {
+        description: 'YCS Shuffling',
+        playserver: 'OVERLAY',
+        playchannel: '1',
+        playlayer: '2',
+        webplayout: '2',
+        steps: '1',
+        out: 'manual',
+        uicolor: '2',
+        dataformat: 'json',
+        ycsSlot: 'lower-third',
+        DataFields: [
+          {
+            field: 'f2',
+            ftype: 'checkbox',
+            title: 'Show rounds remaining',
+            value: '1'
+          },
+          {
+            field: 'f3',
+            ftype: 'textfield',
+            title: 'Rounds remaining text',
+            value: '13 ROUNDS REMAINING TODAY'
+          },
+          {
+            field: 'f5',
+            ftype: 'textfield',
+            title: 'Current round',
+            value: 'ADVANCED ROUND 10 OF 15'
+          },
+          {
+            field: 'f4',
+            ftype: 'textfield',
+            title: 'Left player',
+            value: 'CREIGHTON P.'
+          },
+          {
+            field: 'f7',
+            ftype: 'filelist',
+            title: 'Left flag',
+            assetfolder: './assets/',
+            extension: 'png',
+            value: './assets/us.png',
+            ycsPrimary: true
+          },
+          {
+            field: 'f6',
+            ftype: 'textfield',
+            title: 'Right player',
+            value: 'THOMAS G.'
+          },
+          {
+            field: 'f8',
+            ftype: 'filelist',
+            title: 'Right flag',
+            assetfolder: './assets/',
+            extension: 'png',
+            value: './assets/us.png',
+            ycsPrimary: true
+          }
+        ]
+      };
+    </script>
+  </head>
+  <body>
+    <div id="match-status" data-variant="shuffling" aria-label="Duelists shuffling">
+      <div class="graphic-reveal">
+        <div class="backdrop" aria-hidden="true" data-node-id="1:43"></div>
+        <img class="blue-panel" src="./assets/shuffling-blue.svg" alt="" data-node-id="1:47" />
+        <div class="red-panel" aria-hidden="true"><div class="red-inner"></div></div>
+        <div class="text-box name-box name-left">
+          <span class="fit-text" data-fit data-field="leftName"></span>
+        </div>
+        <div class="text-box name-box name-right">
+          <span class="fit-text" data-fit data-field="rightName"></span>
+        </div>
+        <div class="flag-box flag-left">
+          <img class="flag" data-image="leftFlag" src="./assets/us.png" alt="Left player flag" />
+        </div>
+        <div class="flag-box flag-right">
+          <img class="flag" data-image="rightFlag" src="./assets/us.png" alt="Right player flag" />
+        </div>
+
+        <div class="text-box vs-box"><span class="fit-text" data-fit>VS</span></div>
+        <div class="round-box">
+          <div class="text-box round-text-box">
+            <span class="fit-text" data-fit data-field="currentRound"></span>
+          </div>
+          <div class="text-box remaining-box">
+            <span class="fit-text" data-fit data-field="roundsRemaining"></span>
+          </div>
+        </div>
+        <div class="text-box caption-box">
+          <span class="fit-text" data-fit>DUELISTS SHUFFLING</span>
+        </div>
+      </div>
+    </div>
+    <script src="./spx.js"></script>
+  </body>
+</html>

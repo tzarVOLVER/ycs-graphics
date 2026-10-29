@@ -1,5 +1,17 @@
 # YCS SPX graphics
 
+## Match status
+
+[Shuffling and Siding](graphics/match-status/README.md) are two separate SPX
+templates based on the supplied Figma frames. Both show player names, flags and
+round information; Siding adds scores. Each has a fixed caption and a single
+Show rounds remaining checkbox. Panels and text reveal from the center with no
+opacity fades. Names, scores and round labels shrink horizontally to fit.
+
+Build both with `python scripts/package-spx.py --graphic match-status` and extract
+the entire `YCS` folder from `dist/YCS-SPX-Match-Status.zip` into SPX
+`ASSETS/templates/`. Import `shuffling.html` and `siding.html` separately.
+
 ## Modular lower third
 
 Import `graphics/lower-third/lower-third.html` for a fixed 1920 × 1080 lower third.

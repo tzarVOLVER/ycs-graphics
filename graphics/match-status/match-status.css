@@ -1,0 +1,272 @@
+@font-face {
+  font-family: MatchAnybody;
+  src: url('../ticker/assets/Anybody-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchVS;
+  src: url('./assets/Anybody-ExpandedExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchApotek;
+  src: url('./assets/ApotekComp-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchScore;
+  src: url('./assets/Apotek-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: block;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+#match-status {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear 240ms;
+}
+#match-status.visible {
+  visibility: visible;
+  transition-delay: 0s;
+}
+.graphic-reveal {
+  position: absolute;
+  left: 399px;
+  top: 866px;
+  width: 1125px;
+  height: 189px;
+  clip-path: inset(0 50%);
+  transition: clip-path 180ms cubic-bezier(0.65, 0, 0.35, 1) 60ms;
+}
+.visible .graphic-reveal {
+  clip-path: inset(0 0);
+  transition-duration: 340ms;
+  transition-delay: 0s;
+}
+.backdrop {
+  position: absolute;
+  left: 5px;
+  top: 58px;
+  width: 1115px;
+  height: 131px;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(180deg, transparent 0.439%, #000 10.185%, transparent 100%);
+}
+.blue-panel {
+  position: absolute;
+  left: 0;
+  top: 58px;
+}
+.red-panel {
+  position: absolute;
+  left: 635px;
+  top: 58px;
+  width: 490px;
+  height: 67px;
+  border-radius: 8px;
+  background: #f62162;
+}
+.red-inner {
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 483px;
+  height: 65px;
+  border-radius: 8px;
+  background: #212121;
+}
+.text-box {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  clip-path: inset(0 50%);
+  transition: clip-path 120ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.visible .text-box {
+  clip-path: inset(0 0);
+  transition-duration: 260ms;
+  transition-delay: 140ms;
+}
+.fit-text {
+  display: inline-block;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.name-box {
+  top: 59px;
+  height: 68px;
+  color: #fff;
+  font:
+    700 39px MatchAnybody,
+    sans-serif;
+}
+.name-left {
+  left: 71px;
+  width: 342px;
+  justify-content: flex-end;
+}
+.name-left .fit-text {
+  transform-origin: right center;
+}
+.name-right {
+  left: 707px;
+  width: 343px;
+  justify-content: flex-start;
+}
+.name-right .fit-text {
+  transform-origin: left center;
+}
+.flag-box {
+  position: absolute;
+  top: 77px;
+  width: 46px;
+  height: 28px;
+  overflow: hidden;
+  clip-path: inset(0 50%);
+  transition: clip-path 120ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.visible .flag-box {
+  clip-path: inset(0 0);
+  transition-duration: 260ms;
+  transition-delay: 140ms;
+}
+.flag-left {
+  left: 426px;
+}
+.flag-right {
+  left: 649px;
+}
+.flag {
+  display: block;
+  width: 46px;
+  height: 28px;
+  object-fit: cover;
+}
+[hidden] {
+  display: none !important;
+}
+.vs-box {
+  left: 515px;
+  top: 72px;
+  width: 96px;
+  height: 45px;
+  justify-content: center;
+  color: #fff;
+  font:
+    800 45px MatchVS,
+    sans-serif;
+}
+.vs-box .fit-text,
+.score-box .fit-text,
+.round-box .fit-text,
+.caption-box .fit-text {
+  transform-origin: center;
+}
+.visible .vs-box {
+  transition-delay: 80ms;
+}
+.round-box {
+  position: absolute;
+  left: 424px;
+  top: 0;
+  width: 274px;
+  height: 49px;
+  border-radius: 8px;
+  background: #212121;
+}
+.round-text-box {
+  left: 4px;
+  top: 10px;
+  width: 267px;
+  height: 29px;
+  justify-content: center;
+  color: #f3ce48;
+  font:
+    500 36px MatchApotek,
+    sans-serif;
+}
+.has-remaining .round-text-box {
+  top: 5px;
+}
+.remaining-box {
+  left: 4px;
+  top: 25px;
+  width: 267px;
+  height: 29px;
+  justify-content: center;
+  color: #fff;
+  font:
+    700 13px MatchAnybody,
+    sans-serif;
+}
+.caption-box {
+  left: 425px;
+  top: 129px;
+  width: 275px;
+  height: 46px;
+  justify-content: center;
+  color: #fff;
+  font:
+    500 41px MatchApotek,
+    sans-serif;
+}
+.visible .caption-box {
+  transition-delay: 220ms;
+  transition-duration: 240ms;
+}
+.score-box {
+  top: 69px;
+  width: 65px;
+  height: 46px;
+  justify-content: center;
+  color: #fff;
+  font:
+    700 48px MatchScore,
+    sans-serif;
+}
+.score-left {
+  left: 425px;
+}
+.score-right {
+  left: 635px;
+}
+[data-variant='siding'] .red-inner {
+  left: 65px;
+  width: 420px;
+}
+[data-variant='siding'] .name-box {
+  top: 58px;
+}
+[data-variant='siding'] .name-left {
+  left: 8px;
+}
+[data-variant='siding'] .name-right {
+  left: 775px;
+}
+[data-variant='siding'] .flag-box {
+  top: 76px;
+}
+[data-variant='siding'] .flag-left {
+  left: 363px;
+}
+[data-variant='siding'] .flag-right {
+  left: 717px;
+}

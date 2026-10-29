@@ -8,7 +8,12 @@ SOURCE = ROOT / 'graphics' / 'ticker'
 
 
 def package(graphic='ticker'):
-    if graphic == 'lower-third':
+    if graphic == 'match-status':
+        output = ROOT / 'dist' / 'YCS-SPX-Match-Status.zip'
+        files = sorted(path for path in (ROOT / 'graphics/match-status').rglob('*')
+                       if path.is_file() and path.suffix != '.md')
+        files += [SOURCE / 'assets' / 'Anybody-Bold.otf']
+    elif graphic == 'lower-third':
         output = ROOT / 'dist' / 'YCS-SPX-Lower-Third.zip'
         files = sorted(path for path in (ROOT / 'graphics/lower-third').iterdir()
                        if path.suffix in ['.html', '.css', '.js'])
@@ -26,7 +31,16 @@ def package(graphic='ticker'):
     with ZipFile(output, 'w', compression=ZIP_DEFLATED) as archive:
         for path in files:
             archive.write(path, 'YCS/' + path.relative_to(ROOT / 'graphics').as_posix())
-        if graphic == 'lower-third':
+        if graphic == 'match-status':
+            archive.writestr('YCS/match-status/INSTALL.txt',
+                'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
+                'Import shuffling.html and siding.html as two separate templates.\n'
+                'Keep shared code, fonts and panel/flag assets in their included folders.\n'
+                'Use 1920 x 1080 output. Templates start hidden.\n'
+                'Both use the lower-third slot in the YCS fork and layer 2 in stock SPX.\n'
+                'The caption is fixed in each file. Show rounds remaining is the only checkbox.\n'
+                'Add local PNG flags to YCS/match-status/assets/ for the flag selectors.\n')
+        elif graphic == 'lower-third':
             archive.writestr('YCS/lower-third/INSTALL.txt',
                 'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
                 'Import YCS/lower-third/lower-third.html once and reuse in each rundown.\n'
@@ -49,5 +63,5 @@ def package(graphic='ticker'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--graphic', choices=['ticker', 'lower-third'], default='ticker')
+    parser.add_argument('--graphic', choices=['ticker', 'lower-third', 'match-status'], default='ticker')
     package(parser.parse_args().graphic)
