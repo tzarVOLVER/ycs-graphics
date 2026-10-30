@@ -30,7 +30,8 @@ preview behavior and does not implement this optional metadata.
 
 All plates use one fixed reveal sequence: the panel wipes open from the left,
 then the name and title reveal through separate masks with a short horizontal
-text movement. Exit retracts text first, then the panel (240 ms total, within
+text movement. Panel and text transitions share the match-status graphics' fast
+ease-out curve (`cubic-bezier(0.07, 0.24, 0, 1)`). Exit retracts text first, then the panel (240 ms total, within
 the existing SPX slot retirement window). No opacity fades or whole-panel fly-in
 are used. There are no appearance or timing controls. Names and titles shrink horizontally when needed, never
 stretch short labels, and refit after font/layout changes. Fonts and fitting/data
