@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decktype Composer</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0e1217;
+  --surface:#161c24;
+  --surface-2:#1d252f;
+  --line:#2a3440;
+  --text:#e8edf4;
+  --muted:#8c98a8;
+  --accent:#5b8def;
+  --accent-hover:#7aa3f5;
+  --danger:#ef6a7d;
+  --radius:12px;
+  font-family:"Inter","SF Pro Text","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px 24px 28px;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{max-width:1280px;margin:0 auto}
+
+header{margin-bottom:14px}
+h1{font-size:18px;font-weight:650;letter-spacing:-.01em;margin:0}
+h2{font-size:13px;font-weight:600;margin:0 0 10px}
+
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface-2);padding:8px 14px;border-radius:9px;font-size:14px;font-weight:500;transition:background .15s,border-color .15s}
+button:hover:not(:disabled){background:#26313d;border-color:#3a4857}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;width:100%}
+button.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
+button.small{padding:6px 12px;font-size:13px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.segmented{display:inline-flex;padding:3px;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:11px}
+.mode{display:flex;justify-content:center;margin-bottom:12px}
+.segmented button{border:0;background:transparent;padding:6px 18px;color:var(--muted)}
+.segmented button:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
+.segmented button.active{background:var(--accent);color:#fff}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+
+.canvas-wrap{position:relative;width:100%;aspect-ratio:1200/1004;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;touch-action:none;cursor:grab}
+.canvas-wrap.dragging{cursor:grabbing}
+canvas{display:block;width:100%;height:100%}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:14px;pointer-events:none;padding:24px}
+
+.pickers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.pickers:has(#fieldB.hidden){grid-template-columns:1fr}
+.field{position:relative}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=search]{width:100%;min-width:0;padding:9px 12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--text);transition:border-color .15s}
+input[type=text]:hover,input[type=search]:hover{border-color:#3a4857}
+input[type=text]:focus,input[type=search]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,141,239,.2)}
+input::placeholder{color:#5f6b7a}
+
+.options{display:none;position:absolute;z-index:5;top:calc(100% + 4px);left:0;right:0;max-height:240px;overflow:auto;background:var(--surface-2);border:1px solid #3a4857;border-radius:10px;box-shadow:0 12px 28px rgba(0,0,0,.5);padding:4px}
+.options.show{display:block}
+.option{padding:8px 10px;border-radius:7px;cursor:pointer;font-size:14px}
+.option:hover{background:#2c3846}
+.option small{display:block;font-size:12px;color:var(--muted)}
+.option.none{cursor:default;color:var(--muted);font-size:13px}
+.option.none:hover{background:transparent}
+.status{min-height:18px;margin-top:4px;font-size:12px;color:var(--muted)}
+.status.error{color:var(--danger)}
+
+aside{display:grid;gap:12px;align-self:center}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.check{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;color:var(--text);cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.selection{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.selection strong{color:var(--text);font-weight:600;background:var(--surface-2);border:1px solid var(--line);padding:2px 10px;border-radius:999px;font-size:12px}
+input[type=file]{width:100%;font-size:13px;color:var(--muted)}
+input[type=file]::file-selector-button{margin-right:10px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+input[type=file]::file-selector-button:hover{background:#26313d}
+#filename{margin-bottom:10px}
+
+.hidden{display:none!important}
+
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr}
+  body{padding:16px 14px 32px}
+}
+@media(max-width:560px){
+  .pickers{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>Decktype Composer</h1>
+  </header>
+
+  <div class="layout">
+    <section>
+      <div class="mode">
+        <div class="segmented" role="group" aria-label="Layout">
+          <button id="single">Single</button>
+          <button id="double" class="active">Double</button>
+        </div>
+      </div>
+      <div id="canvasWrap" class="canvas-wrap">
+        <canvas id="canvas" width="1200" height="1004"></canvas>
+        <div class="empty" id="empty">Import a decktype list, then search to add artwork.</div>
+      </div>
+
+      <div class="pickers">
+        <div class="field">
+          <label for="searchA">Decktype A</label>
+          <input id="searchA" autocomplete="off" type="search" placeholder="Search decktypes…">
+          <div class="options" id="optionsA"></div>
+          <div class="status" id="statusA"></div>
+        </div>
+        <div class="field" id="fieldB">
+          <label for="searchB">Decktype B</label>
+          <input id="searchB" autocomplete="off" type="search" placeholder="Search decktypes…">
+          <div class="options" id="optionsB"></div>
+          <div class="status" id="statusB"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <div class="selection"><span>Selected card</span><strong id="selection">Card A</strong></div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="guides" checked> Show guides</label>
+          <button id="reset" class="small">Reset image</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Decktype list</h2>
+        <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" aria-label="Import CSV or JSON">
+        <p class="hint" id="importStatus">Import a CSV or JSON file to get started.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Export</h2>
+        <label for="filename">Filename</label>
+        <input id="filename" type="text" placeholder="DECKTYPE.png">
+        <button class="primary" id="export" disabled>Export PNG</button>
+        <p class="hint">1200 × 1004 px. Guides are hidden in the export.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+(()=>{'use strict';
+const W=1200,H=1004,URL_API='https://ygo-card.tzarnikolas.workers.dev/?name=';
+// Artwork region, relative to the full card image.
+const ART={x:0.116,y:0.219,w:0.768,h:0.459};
+const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d'),wrap=$('canvasWrap');
+let mode='double',entries=[],selected=0,customName=false,drag=null;
+const cards=[{name:'',card:'',img:null,zoom:1,dx:0,dy:0,seq:0},{name:'',card:'',img:null,zoom:1,dx:0,dy:0,seq:0}];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const label=i=>'Card '+(i?'B':'A');
+
+function artworkRect(img){return {x:img.width*ART.x,y:img.height*ART.y,w:img.width*ART.w,h:img.height*ART.h}}
+
+function makeLayer(c){
+  const layer=document.createElement('canvas');layer.width=W;layer.height=H;
+  const g=layer.getContext('2d');
+  if(c.img){
+    const r=artworkRect(c.img),scale=Math.max(W/r.w,H/r.h)*c.zoom;
+    g.drawImage(c.img,W/2+c.dx-(r.x+r.w/2)*scale,H/2+c.dy-(r.y+r.h/2)*scale,c.img.width*scale,c.img.height*scale);
+  }
+  return layer;
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#161c24';ctx.fillRect(0,0,W,H);
+  if(mode==='single'){
+    if(cards[0].img)ctx.drawImage(makeLayer(cards[0]),0,0);
+  }else{
+    const a=cards[0].img?makeLayer(cards[0]):null,b=cards[1].img?makeLayer(cards[1]):null;
+    if(a&&b){
+      ctx.drawImage(a,0,0);
+      const mask=document.createElement('canvas');mask.width=W;mask.height=H;
+      const g=mask.getContext('2d');g.drawImage(b,0,0);
+      g.globalCompositeOperation='destination-in';
+      const grad=g.createLinearGradient(W*.40,0,W*.60,0);
+      grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,1)');
+      g.fillStyle=grad;g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';
+      ctx.drawImage(mask,0,0);
+    }else if(a||b)ctx.drawImage(a||b,0,0);
+  }
+  if($('guides').checked){
+    ctx.save();ctx.strokeStyle='#e74a62';ctx.lineWidth=2;ctx.beginPath();
+    ctx.moveTo(0,H*.292);ctx.lineTo(W,H*.292);ctx.stroke();ctx.restore();
+  }
+  const ready=!!(cards[0].img&&(mode==='single'||cards[1].img));
+  $('export').disabled=!ready;
+  $('empty').classList.toggle('hidden',!!(cards[0].img||cards[1].img));
+}
+
+function select(i){selected=i;$('selection').textContent=label(i)}
+
+function setMode(m){
+  mode=m;select(0);
+  $('single').classList.toggle('active',m==='single');
+  $('double').classList.toggle('active',m==='double');
+  $('fieldB').classList.toggle('hidden',m==='single');
+  updateFilename();render();
+}
+$('single').onclick=()=>setMode('single');
+$('double').onclick=()=>setMode('double');
+$('guides').onchange=render;
+
+function updateFilename(){
+  if(customName)return;
+  const names=cards.slice(0,mode==='single'?1:2).map(c=>c.name.trim().toUpperCase()).filter(Boolean);
+  $('filename').value=(names.join(' ')||'DECKTYPE')+'.png';
+}
+$('filename').addEventListener('input',()=>{customName=true});
+
+function csvParse(text){
+  const rows=[],row=[];let field='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(quoted){
+      if(ch==='"'&&text[i+1]==='"'){field+='"';i++}
+      else if(ch==='"')quoted=false;
+      else field+=ch;
+    }else if(ch==='"')quoted=true;
+    else if(ch===','){row.push(field);field=''}
+    else if(ch==='\r'||ch==='\n'){
+      if(ch==='\r'&&text[i+1]==='\n')i++;
+      row.push(field);
+      if(row.some(x=>x.trim()))rows.push([...row]);
+      row.length=0;field='';
+    }else field+=ch;
+  }
+  row.push(field);
+  if(row.some(x=>x.trim()))rows.push([...row]);
+  return rows;
+}
+
+function normalize(data){
+  if(!Array.isArray(data))throw Error('Expected a JSON array.');
+  return data.map(e=>({
+    name:String(e['Deck Name']??e.deckName??e.name??e.deck??'').trim(),
+    card:String(e['Main Card - Advanced Format']??e.mainCard??e.card??e.cardName??'').trim()
+  })).filter(e=>e.name&&e.card);
+}
+
+$('importFile').onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+    const text=await file.text();let list;
+    if(file.name.toLowerCase().endsWith('.json'))list=normalize(JSON.parse(text));
+    else{
+      const rows=csvParse(text.replace(/^\uFEFF/,''));
+      const headers=rows.shift()?.map(x=>x.trim())||[];
+      list=normalize(rows.map(row=>Object.fromEntries(headers.map((h,i)=>[h,row[i]??'']))));
+    }
+    if(!list.length)throw Error('No rows with a deck name and main card found.');
+    entries=list;
+    $('importStatus').textContent=`Loaded ${list.length} decktypes from ${file.name}.`;
+  }catch(err){$('importStatus').textContent='Import failed: '+err.message}
+};
+
+function searchOptions(side){
+  const input=$('search'+side),menu=$('options'+side),q=input.value.toLowerCase().trim();
+  menu.replaceChildren();
+  if(!q){menu.classList.remove('show');return}
+  if(!entries.length){
+    const none=document.createElement('div');none.className='option none';
+    none.textContent='Import a decktype list to search.';
+    menu.appendChild(none);menu.classList.add('show');return;
+  }
+  const matches=entries.filter(e=>e.name.toLowerCase().includes(q)).slice(0,30);
+  if(!matches.length){
+    const none=document.createElement('div');none.className='option none';
+    none.textContent='No matching decktypes.';
+    menu.appendChild(none);menu.classList.add('show');return;
+  }
+  for(const entry of matches){
+    const item=document.createElement('div');item.className='option';
+    const strong=document.createElement('strong');strong.textContent=entry.name;
+    const sub=document.createElement('small');sub.textContent=entry.card;
+    item.append(strong,sub);
+    item.addEventListener('mousedown',ev=>ev.preventDefault());
+    item.onclick=()=>choose(side,entry);
+    menu.appendChild(item);
+  }
+  menu.classList.add('show');
+}
+
+async function choose(side,entry){
+  const i=side==='A'?0:1,c=cards[i],seq=++c.seq,status=$('status'+side);
+  c.name=entry.name;c.card=entry.card;c.img=null;c.dx=c.dy=0;c.zoom=1;
+  $('search'+side).value=entry.name;$('options'+side).classList.remove('show');
+  status.classList.remove('error');status.textContent='Loading '+entry.card+'…';
+  select(i);updateFilename();render();
+  try{
+    const res=await fetch(URL_API+encodeURIComponent(entry.card));
+    if(!res.ok)throw Error('Search failed (HTTP '+res.status+').');
+    const json=await res.json();
+    const result=json?.data?.[0];
+    if(!result?.ImageUrl)throw Error('No image returned for this card.');
+    const image=await new Promise((resolve,reject)=>{
+      const im=new Image();im.crossOrigin='anonymous';
+      im.onload=()=>resolve(im);
+      im.onerror=()=>reject(Error('Image failed to load (possible CORS issue).'));
+      im.src=result.ImageUrl;
+    });
+    if(seq!==c.seq)return;
+    c.img=image;status.textContent=result.CardName||entry.card;render();
+  }catch(err){
+    if(seq!==c.seq)return;
+    status.classList.add('error');status.textContent=err.message;render();
+  }
+}
+
+for(const side of ['A','B']){
+  $('search'+side).addEventListener('input',()=>searchOptions(side));
+  $('search'+side).addEventListener('focus',()=>searchOptions(side));
+}
+document.addEventListener('click',e=>{
+  for(const side of ['A','B'])
+    if(!e.target.closest('#options'+side)&&e.target!==$('search'+side))$('options'+side).classList.remove('show');
+});
+
+function point(e){const b=canvas.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*W,y:(e.clientY-b.top)/b.height*H}}
+
+wrap.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  const p=point(e);
+  let i=mode==='double'&&p.x>W/2?1:0;
+  if(!cards[i].img&&mode==='double'&&cards[1-i].img)i=1-i;
+  select(i);drag={x:p.x,y:p.y};
+  wrap.setPointerCapture(e.pointerId);wrap.classList.add('dragging');
+});
+wrap.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  const p=point(e),c=cards[selected];
+  c.dx+=p.x-drag.x;c.dy+=p.y-drag.y;drag=p;render();
+});
+for(const type of ['pointerup','pointercancel','lostpointercapture'])
+  wrap.addEventListener(type,()=>{drag=null;wrap.classList.remove('dragging')});
+wrap.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const c=cards[selected];if(!c.img)return;
+  c.zoom=clamp(c.zoom*Math.exp(-e.deltaY*.001),.3,5);render();
+},{passive:false});
+
+$('reset').onclick=()=>{const c=cards[selected];c.dx=c.dy=0;c.zoom=1;render()};
+
+$('export').onclick=()=>{
+  if($('export').disabled)return;
+  const guides=$('guides').checked;$('guides').checked=false;render();
+  let filename=$('filename').value.trim().replace(/[\\/:*?"<>|]/g,'_')||'DECKTYPE.png';
+  filename=filename.replace(/\.(png|jpg|jpeg|webp)$/i,'')+'.png';
+  try{
+    canvas.toBlob(blob=>{
+      if(!blob){alert('Could not encode PNG.');return}
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=filename;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+    },'image/png');
+  }catch(e){alert('Export blocked by image CORS: '+e.message)}
+  $('guides').checked=guides;render();
+};
+
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,22 @@
-# YCS SPX graphics
+# YCS graphics and production tools
+
+## Decktype Composer
+
+[Decktype Composer](index.html) is a maintained standalone tool for creating
+decktype images. Open `index.html` in a browser; no build step or SPX installation
+is needed. Its HTML, CSS and JavaScript are contained in that file.
+
+Import a CSV or JSON decktype list, search for a decktype and choose Single or
+Double artwork. Drag the selected image to reposition it, scroll to zoom, and
+use Reset image to restore its crop. Export produces a 1200 × 1004 PNG with the
+guides omitted; the filename is generated from the deck names or can be edited.
+
+CSV columns are `Deck Name` and `Main Card - Advanced Format`. JSON accepts an
+array of objects with those keys, or aliases such as `name` and `card`.
+Card artwork lookup uses the external API configured as `URL_API` in the file,
+and artwork loading/export depends on the API and image host allowing browser
+access. The compositor remains a production utility alongside the broadcast
+templates and is not included in the SPX template ZIPs.
 
 ## Match status
 
