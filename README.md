@@ -1,14 +1,87 @@
-# YCS SPX ticker templates
+# YCS graphics and production tools
+
+## Decktype Composer
+
+[Decktype Composer](index.html) is a maintained standalone tool for creating
+decktype images. Open `index.html` in a browser; no build step or SPX installation
+is needed. Its HTML, CSS and JavaScript are contained in that file.
+
+Import a CSV or JSON decktype list, search for a decktype and choose Single or
+Double artwork. Drag the selected image to reposition it, scroll to zoom, and
+use Reset image to restore its crop. Export produces a 1200 × 1004 PNG with the
+guides omitted; the filename is generated from the deck names or can be edited.
+
+CSV columns are `Deck Name` and `Main Card - Advanced Format`. JSON accepts an
+array of objects with those keys, or aliases such as `name` and `card`.
+Card artwork lookup uses the external API configured as `URL_API` in the file,
+and artwork loading/export depends on the API and image host allowing browser
+access. The compositor remains a production utility alongside the broadcast
+templates and is not included in the SPX template ZIPs.
+
+## Match status
+
+[Shuffling and Siding](graphics/match-status/README.md) are two separate SPX
+templates based on the supplied Figma frames. Both show player names, flags and
+round information; Siding adds scores. Each has a fixed caption and a single
+Show rounds remaining checkbox. Panels open outward from the center while masked
+player details rise and captions slide down, following the Figma motion example.
+The round panel also rises through a mask. There are no opacity fades. Names,
+scores and round labels shrink horizontally to fit.
+
+Build both with `python scripts/package-spx.py --graphic match-status` and extract
+the entire `YCS` folder from `dist/YCS-SPX-Match-Status.zip` into SPX
+`ASSETS/templates/`. Import `shuffling.html` and `siding.html` separately.
+
+## Modular lower third
+
+Import `graphics/lower-third/lower-third.html` for a fixed 1920 × 1080 lower third.
+Choose a 1–4 nameplate layout, enter each name/title and use its Show checkbox.
+Hiding one plate keeps the other positions fixed. Layouts are independent of the
+stage: reuse this same template in all three rundowns with separate values.
+
+In the YCS SPX fork, `ycsPreviewOnEdit: false` keeps checkbox, text, layout and
+link edits as drafts. Explicit Focus/Preview shows the graphic in Preview; Play
+takes it to Program; Update on air applies the chosen plates without replaying
+the entrance. Save draft does not change Program. Companion uses saved values,
+so save edits before playing with Companion. Stock SPX controls its own automatic
+preview behavior and does not implement this optional metadata.
+
+All plates use one fixed reveal sequence: the panel wipes open from the left,
+then the name and title reveal through separate masks with a short horizontal
+text movement. Panel and text transitions share the match-status graphics' fast
+ease-out curve (`cubic-bezier(0.07, 0.24, 0, 1)`). Exit retracts text first, then the panel (240 ms total, within
+the existing SPX slot retirement window). No opacity fades or whole-panel fly-in
+are used. There are no appearance or timing controls. Names and titles shrink horizontally when needed, never
+stretch short labels, and refit after font/layout changes. Fonts and fitting/data
+helpers are reused with the ticker. Text is rendered as plain text.
+
+```powershell
+python scripts/package-spx.py --graphic lower-third
+```
+
+Extract the entire `YCS` folder from `dist/YCS-SPX-Lower-Third.zip` into SPX
+`ASSETS/templates/`, then import `YCS/lower-third/lower-third.html`. Keep the
+included `YCS/shared` and `YCS/ticker/assets` folders in place. The graphic starts
+hidden with `FIRST LAST` name placeholders and HOST / COMMENTATOR / ANALYST / GUEST
+title defaults for new imports. Existing saved fields are preserved, including
+intentionally blank fields. It uses the fork's `lower-third` slot; stock SPX
+defaults to layer 2. This is an SPX template, without an OGraf compliance claim.
+
+The reference layout uses 396 × 96 px nameplates at y=920. Two-person positions
+are x=352 and x=1170. Fixed layout positions live in `graphics/lower-third/data.js`;
+visual dimensions and animation live in its CSS.
+
+## Ticker
 
 A separate [Current round data-link pilot](integrations/spx-data-link/README.md) tests chain-button Linked/Manual controls in an isolated SPX 1.4.1 rundown. It uses local test data; Sheets/API connectors are not included yet.
 
-Three SPX templates for 1920 x 1080 broadcast output:
+One reusable template for 1920 x 1080 broadcast output:
 
-- `graphics/ticker/YCS-Ticker-1.html` — broadcast-1, default layer 7
-- `graphics/ticker/YCS-Ticker-2.html` — broadcast-2, default layer 8
-- `graphics/ticker/YCS-Ticker-3.html` — broadcast-3, default layer 9
+- `graphics/ticker/ticker.html` — use the same file in every stage rundown.
 
-Each template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. Additional JSON data can supply `tickerItems`. Each template is assigned to its own instance; route its layer to the intended output in SPX.
+The template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. The Stories field (`f14`) supplies a JSON story list; additional JSON (`f1`) remains available for other overrides. Each output owns an independent iframe and its rundown supplies its own values/mappings. The template has no fixed broadcast identity and loads neutral defaults with an empty playlist. Routing belongs to the controller, not the template. Stock SPX still requires its own layer/output routing.
+
+`YCS-Ticker-1.html`, `YCS-Ticker-2.html` and `YCS-Ticker-3.html` are retained for older imports and their original instance/layer defaults. New imports should use `ticker.html`. The fork's `node ycs/share-ticker.cjs` migrates existing saved imports and template-default mapping keys with exact backups, preserving fields, manual/linked modes and graphic IDs. Run it while SPX is stopped. Legacy hidden `f0` metadata is ignored by the shared template.
 
 ## Package
 
@@ -16,13 +89,13 @@ Each template starts hidden and uses SPX Play, Update and Stop. Controls include
 python scripts/package-spx.py
 ```
 
-The resulting `dist/YCS-SPX-Tickers.zip` contains the three HTML templates and all shared assets, CSS, JavaScript and data. Extract its `YCS` folder into SPX `ASSETS/templates/`, then import the three HTML files. Keep the shared folders beside them. No separate app or server is required beyond SPX.
+The resulting `dist/YCS-SPX-Tickers.zip` contains `ticker.html`, the legacy entry points and all shared assets, CSS, JavaScript and data. Extract its `YCS` folder into SPX `ASSETS/templates/`, then import `ticker.html`. Keep the shared folders beside it. No separate app or server is required beyond SPX.
 
 ## Layout and behavior
 
 The fixed bar is 1586 x 80 at x=202, y=974 on a 1920 x 1080 canvas, following the supplied broadcast reference. The logo and centered left labels use the same reference placement. The right text box has 9 px side margins; round text keeps its base size and shrinks horizontally only when needed. The crawler keeps moving through category/topic transitions. Text fitting automatically refreshes after text edits, font loads, CSS/layout changes, and hidden-to-visible transitions. Measurements use layout widths so renderer/display scaling does not cause clipped labels.
 
-Shared ticker data is in `graphics/ticker/data/shared.json`. Stage-specific data is in `data/stages/`, with per-instance mappings in `data/instances.json`. SPX fields override the resolved data. The ticker and header timing defaults are 145 px/s crawl speed, 180 ms topic entry delay, 180 ms header transitions and 10 ms label-swap gap.
+The shared template loads only `data/defaults.json`; event content comes from SPX saved fields and data mappings. The legacy entry points still resolve `data/shared.json`, `data/stages/` and `data/instances.json` for compatibility. The ticker and header timing defaults are 145 px/s crawl speed, 180 ms topic entry delay, 180 ms header transitions and 10 ms label-swap gap.
 
 ## Validation
 
@@ -31,3 +104,22 @@ node --test tests/*.test.js
 ```
 
 SPX field/lifecycle bridges are tested in isolation. Live SPX playout still needs host validation. This is an SPX package; OGraf compliance is not claimed. OGraf preparation notes remain in `graphics/ticker/adapters/ograf/README.md` and are excluded from the SPX ZIP.
+
+The ticker and controller share generated data helpers and the same contract fixtures. See [contracts/README.md](contracts/README.md) for regeneration and cross-repository checks. Both repositories remain independently deployable.
+
+
+## Linked story playlists
+
+The custom [YCS SPX fork](https://github.com/tzarVOLVER/ycs-spx/pull/1) adds a visual playlist mapper to Data Manager. Open the ticker's **Stories → Map story list**, choose a Sheets range or JSON array, then map its columns/properties to Category, Topic and Crawler text. For the current sheet, Published controls inclusion and Subtopic maps to Crawler text. Header names are configurable and remain stable when columns move. Missing/renamed/duplicated headers trigger a remapping warning.
+
+Order and Story ID are optional. Without Order the source sequence is used; without IDs, content identity is used. Optional fields can be unused or fixed, with fallbacks for blank source values. Preview shows published, excluded and invalid records. Lists support up to 200 stories / 64 KB and 4000 characters per story text. Invalid live lists hold the previous valid playlist; all-unpublished is a valid empty list and drains the crawler.
+
+A field's `ycsCollection` metadata declares its record keys to the mapper. This is an optional extension in the custom SPX fork, not a standard SPX field type or an OGraf compliance declaration. Stock SPX can still edit the Stories textarea as JSON. Each item has `category`, `topic`, `subtopic`, and optional unique `id`. The separate scalar controls still work.
+
+Save mapping remains off air. Enable the Stories field link in the rundown and explicitly Play/Update to commit it. Switching to manual restores its saved JSON list. Later source refreshes keep visible/entering text moving and replace only the offscreen queue. The renderer continues after the last visible Story ID when possible; changing category/topic timing never pauses the crawl.
+
+Before the first Play, a mapped story list replaces the hidden bootstrap queue and header completely, so bundled sample stories cannot enter program. After the ticker has been shown, live updates retain the continuous-crawl behavior described above.
+
+For a three-stage test on one computer, the fork provides `npm run ycs:rehearsal` and a separate loopback monitor at `http://127.0.0.1:5661/rehearsal`. It uses these templates with disposable rundowns and simulated Sheets/JSON data. See the fork's YCS.md for playback, source-outage, reload/reconnect and server-restart checks; it leaves saved event configuration untouched.
+
+Existing fork demo rundowns need the additive upgrade documented in the fork's YCS.md. Reimport/update the template definition for other SPX installations. Rebuild the SPX ZIP after template changes.

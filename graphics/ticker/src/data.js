@@ -27,12 +27,19 @@ export function validatePatch(patch) {
   }
   if (Object.hasOwn(patch, 'tickerItems')) {
     if (!Array.isArray(patch.tickerItems)) throw new TypeError('tickerItems must be an array');
+    if (patch.tickerItems.length > 200 || new TextEncoder().encode(JSON.stringify(patch.tickerItems)).length > 65536) throw new TypeError('Playlist exceeds 200 stories or 64 KB');
+    const ids = new Set();
     result.tickerItems = patch.tickerItems.map(item => {
       if (!item || typeof item.subtopic !== 'string' || !item.subtopic.trim()) throw new TypeError('Every ticker item needs nonempty subtopic text');
       for (const field of ['category', 'topic']) {
         if (item[field] !== undefined && typeof item[field] !== 'string') throw new TypeError(`Item ${field} must be text`);
       }
-      return { category: item.category || '', topic: item.topic || '', subtopic: item.subtopic };
+      for (const key of ['category', 'topic', 'subtopic']) if ((item[key] || '').length > 4000) throw new TypeError('Story text exceeds 4000 characters');
+      if (item.id !== undefined) {
+        if (typeof item.id !== 'string' || !item.id.trim() || item.id.length > 200 || ids.has(item.id)) throw new TypeError('Story IDs must be nonempty and unique');
+        ids.add(item.id);
+      }
+      return { category: item.category || '', topic: item.topic || '', subtopic: item.subtopic, ...(item.id === undefined ? {} : { id: item.id }) };
     });
   }
   return result;

@@ -1,0 +1,396 @@
+@font-face {
+  font-family: MatchAnybody;
+  src: url('../ticker/assets/Anybody-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchVS;
+  src: url('./assets/Anybody-ExpandedExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchApotek;
+  src: url('./assets/ApotekComp-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: block;
+}
+@font-face {
+  font-family: MatchScore;
+  src: url('./assets/Apotek-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: block;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+#match-status {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+#match-status.visible {
+  visibility: visible;
+}
+.graphic-reveal {
+  position: absolute;
+  left: 399px;
+  top: 866px;
+  width: 1125px;
+  height: 189px;
+}
+.backdrop {
+  position: absolute;
+  left: 5px;
+  top: 58px;
+  width: 1115px;
+  height: 131px;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(180deg, transparent 0.439%, #000 10.185%, transparent 100%);
+}
+.blue-panel {
+  position: absolute;
+  left: 0;
+  top: 58px;
+  transform-origin: 100% 50%;
+}
+.red-panel {
+  position: absolute;
+  left: 635px;
+  top: 58px;
+  width: 490px;
+  height: 67px;
+  border-radius: 8px;
+  background: #f62162;
+  transform-origin: 0% 50%;
+}
+.red-inner {
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 483px;
+  height: 65px;
+  border-radius: 8px;
+  background: #212121;
+}
+.player-mask {
+  position: absolute;
+  top: 68px;
+  height: 39px;
+  overflow: hidden;
+}
+.player-left {
+  left: 5px;
+  width: 467px;
+}
+.player-right {
+  left: 637px;
+  width: 474px;
+}
+/* Animated Figma groups need real boxes, rather than display: contents. */
+.player-info {
+  position: absolute;
+  inset: 0;
+}
+.text-box {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.fit-text {
+  display: inline-block;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: normal;
+  text-transform: uppercase;
+}
+.name-box {
+  top: 6px;
+  height: 38px;
+  color: #fff;
+  font:
+    700 39px MatchAnybody,
+    sans-serif;
+}
+.name-left {
+  left: 5px;
+  width: 403px;
+  justify-content: flex-end;
+}
+.name-left .fit-text {
+  transform-origin: right center;
+}
+.name-right {
+  left: 72px;
+  width: 398px;
+  justify-content: flex-start;
+}
+.name-right .fit-text {
+  transform-origin: left center;
+}
+.flag-box {
+  position: absolute;
+  top: 9px;
+  width: 46px;
+  height: 28px;
+  overflow: hidden;
+}
+.flag-left {
+  left: 421px;
+}
+.flag-right {
+  left: 15px;
+}
+.flag {
+  display: block;
+  width: 46px;
+  height: 28px;
+  object-fit: cover;
+}
+[hidden] {
+  display: none !important;
+}
+.vs-mask {
+  position: absolute;
+  left: 515px;
+  top: 72px;
+  width: 96px;
+  height: 45px;
+  overflow: hidden;
+}
+.vs-box {
+  inset: 0;
+  justify-content: center;
+  color: #fff;
+  font:
+    800 45px MatchVS,
+    sans-serif;
+}
+.vs-box .fit-text,
+.score-box .fit-text,
+.round-box .fit-text,
+.caption-box .fit-text {
+  transform-origin: center;
+}
+.round-mask {
+  position: absolute;
+  left: 413px;
+  top: 0;
+  width: 296px;
+  height: 54px;
+  overflow: hidden;
+}
+.round-box {
+  position: absolute;
+  left: 11px;
+  top: 0;
+  width: 274px;
+  height: 49px;
+  border-radius: 8px;
+  background: #212121;
+}
+.round-text-box {
+  left: 4px;
+  top: 10px;
+  width: 267px;
+  height: 29px;
+  justify-content: center;
+  color: #f3ce48;
+  font:
+    500 36px MatchApotek,
+    sans-serif;
+}
+.has-remaining .round-text-box {
+  top: 5px;
+}
+.remaining-box {
+  left: 4px;
+  top: 25px;
+  width: 267px;
+  height: 29px;
+  justify-content: center;
+  color: #fff;
+  font:
+    700 13px MatchAnybody,
+    sans-serif;
+}
+.caption-mask {
+  position: absolute;
+  left: 397px;
+  top: 133px;
+  width: 331px;
+  height: 38px;
+  overflow: hidden;
+}
+.caption-box {
+  left: 28px;
+  top: 0;
+  width: 275px;
+  height: 38px;
+  justify-content: center;
+  color: #fff;
+  font:
+    500 41px MatchApotek,
+    sans-serif;
+}
+.score-mask {
+  position: absolute;
+  top: 69px;
+  width: 65px;
+  height: 46px;
+  overflow: hidden;
+}
+.score-box {
+  inset: 0;
+  justify-content: center;
+  color: #fff;
+  font:
+    700 48px MatchScore,
+    sans-serif;
+}
+.score-left {
+  left: 425px;
+}
+.score-right {
+  left: 635px;
+}
+[data-variant='siding'] .red-inner {
+  left: 65px;
+  width: 420px;
+}
+[data-variant='siding'] .name-box {
+  top: 8px;
+  width: 342px;
+}
+[data-variant='siding'] .name-left {
+  left: 3px;
+}
+[data-variant='siding'] .name-right {
+  left: 138px;
+  width: 343px;
+}
+[data-variant='siding'] .player-right {
+  width: 483px;
+}
+[data-variant='siding'] .flag-box {
+  top: 8px;
+}
+[data-variant='siding'] .flag-left {
+  left: 358px;
+}
+[data-variant='siding'] .flag-right {
+  left: 80px;
+}
+
+/* Figma 1:20 export: exact curves/values, with an SPX hold instead of looping.
+   Round and score tracks extend the example; VS uses a mask, without opacity. */
+.visible .backdrop,
+.visible .red-panel {
+  animation: panel-open 2s linear 1 forwards;
+}
+.visible .blue-panel {
+  animation: blue-open 2s linear 1 forwards;
+}
+.visible .player-info {
+  animation: player-rise 2s linear 1 forwards;
+}
+.visible .caption-box {
+  animation: caption-drop 2s linear 1 forwards;
+}
+.visible .vs-box {
+  animation: vs-rise 2s linear 1 forwards;
+}
+.visible .round-box {
+  animation: round-rise 2s linear 1 forwards;
+}
+.visible .score-box {
+  animation: score-rise 2s linear 1 forwards;
+}
+@keyframes panel-open {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    scale: 0 1;
+  }
+  22.426%,
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes blue-open {
+  0% {
+    animation-timing-function: cubic-bezier(0.069, 0.24, 0, 1);
+    scale: 0 1;
+  }
+  22.426%,
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes player-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 31px;
+  }
+  22.426%,
+  100% {
+    translate: 0px -3px;
+  }
+}
+@keyframes caption-drop {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px -34px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@keyframes vs-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 10px;
+    clip-path: inset(100% 0 0);
+  }
+  22.426%,
+  100% {
+    translate: 0px -1px;
+    clip-path: inset(0);
+  }
+}
+@keyframes round-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 54px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@keyframes score-rise {
+  0% {
+    animation-timing-function: cubic-bezier(0.07, 0.24, 0, 1);
+    translate: 0px 46px;
+  }
+  22.426%,
+  100% {
+    translate: 0px 0px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #match-status.visible * {
+    animation: none !important;
+  }
+}

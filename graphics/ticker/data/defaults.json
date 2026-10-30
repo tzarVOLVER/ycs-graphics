@@ -1,0 +1,15 @@
+{
+  "logo": "./assets/ycs-logo.png",
+  "background": "./assets/ticker-background.png",
+  "dayDate": "",
+  "location": "",
+  "status": "",
+  "currentRound": "",
+  "roundsRemaining": "",
+  "showRoundsRemaining": false,
+  "crawlSpeed": 145,
+  "topicEntryDelayMs": 180,
+  "headerTransitionMs": 180,
+  "headerSwapGapMs": 10,
+  "tickerItems": []
+}

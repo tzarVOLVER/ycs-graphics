@@ -16,13 +16,26 @@ test('three SPX entry points have separate instances/layers and complete depende
   }
 });
 
+test('the shared ticker has no broadcast identity, neutral defaults and complete dependencies', async () => {
+  const root = new URL('../graphics/ticker/', import.meta.url);
+  const html = await readFile(new URL('ticker.html', root), 'utf8');
+  const definition = JSON.parse(html.match(/window\.SPXGCTemplateDefinition = (\{[\s\S]*?\});/)[1]);
+  assert.doesNotMatch(html, /data-instance|broadcast-[123]/);
+  assert.equal(definition.DataFields.some(field => field.field === 'f0'), false);
+  assert.equal(definition.DataFields.find(field => field.field === 'f14').value, '[]');
+  const defaults = JSON.parse(await readFile(new URL('data/defaults.json', root), 'utf8'));
+  assert.deepEqual(defaults.tickerItems, []); assert.equal(defaults.location, ''); assert.equal(defaults.currentRound, '');
+  for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g)) await access(new URL(match[1], root));
+});
+
 test('SPX lifecycle bridge serializes Update, Play and Stop with normalized fields', async () => {
   const calls = [];
   const oldWindow = globalThis.window;
   globalThis.window = {
     Ticker: {
       ready: Promise.resolve(),
-      getState: () => ({ instanceId: 'broadcast-2' }),
+      getState: () => ({ instanceId: null }),
+      selectInstance: () => { throw new Error('A shared template must not select a broadcast from legacy f0'); },
       update: async patch => calls.push(['update', patch]),
       show: async () => calls.push(['play']),
       hide: async () => calls.push(['stop'])

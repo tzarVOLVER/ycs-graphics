@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "contracts:sync": "node scripts/sync-data-contracts.mjs",
+    "contracts:check": "node scripts/sync-data-contracts.mjs --check",
     "package:spx": "python scripts/package-spx.py"
   }
 }
