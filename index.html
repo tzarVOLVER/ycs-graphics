@@ -156,6 +156,8 @@ input[type=file]::file-selector-button:hover{background:#26313d}
 <script>
 (()=>{'use strict';
 const W=1200,H=1004,URL_API='https://ygo-card.tzarnikolas.workers.dev/?name=';
+// Smaller values make scroll-wheel zoom more precise.
+const ZOOM_SENSITIVITY=.0005;
 // Artwork region, relative to the full card image.
 const ART={x:0.116,y:0.219,w:0.768,h:0.459};
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d'),wrap=$('canvasWrap');
@@ -350,7 +352,7 @@ for(const type of ['pointerup','pointercancel','lostpointercapture'])
 wrap.addEventListener('wheel',e=>{
   e.preventDefault();
   const c=cards[selected];if(!c.img)return;
-  c.zoom=clamp(c.zoom*Math.exp(-e.deltaY*.001),.3,5);render();
+  c.zoom=clamp(c.zoom*Math.exp(-e.deltaY*ZOOM_SENSITIVITY),.3,5);render();
 },{passive:false});
 
 $('reset').onclick=()=>{const c=cards[selected];c.dx=c.dy=0;c.zoom=1;render()};
