@@ -21,7 +21,7 @@ const pluginFolder = join(assets, 'plugins/ycsDataLinkTest');
 await mkdir(pluginFolder, { recursive: true });
 await cp(join(repository, 'integrations/spx-data-link/plugin/init.js'), join(pluginFolder, 'init.js'));
 
-const original = await readFile(join(repository, 'graphics/ticker/YCS-Ticker-1.html'), 'utf8');
+const original = await readFile(join(repository, 'graphics/ticker/ticker.html'), 'utf8');
 const pattern = /window\.SPXGCTemplateDefinition = (\{[\s\S]*?\});/;
 const definition = JSON.parse(original.match(pattern)[1]);
 definition.description = 'Current round — data link test';

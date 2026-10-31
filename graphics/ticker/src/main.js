@@ -2,11 +2,7 @@ import { createDataStore } from './data.js';
 import { TickerRenderer } from './renderer.js';
 
 const renderer = new TickerRenderer(document.getElementById('ticker'));
-// Legacy entry points keep their own defaults. The shared template has no
-// broadcast identity: its containing output owns routing and SPX owns content.
-const templateInstanceId = document.documentElement.dataset.instance || null;
-let instanceId = templateInstanceId;
-let stageId = new URLSearchParams(location.search).get('ycsStage') || null;
+// The containing output owns routing; SPX supplies this frame's content.
 let store;
 let disposed = false;
 let loadRevision = 0;
@@ -17,29 +13,13 @@ async function readJson(path) {
   return response.json();
 }
 
-async function loadInstance(id) {
+async function loadDefaults() {
   const revision = ++loadRevision;
-  if (id === null) {
-    const defaults = await readJson('../data/defaults.json');
-    if (disposed || revision !== loadRevision) return;
-    const next = createDataStore(defaults);
-    renderer.apply(next.get());
-    store = next;
-    return;
-  }
-  const [config, shared] = await Promise.all([readJson('../data/instances.json'), readJson('../data/shared.json')]);
-  if (!Object.hasOwn(config, id)) throw new Error(`Unknown instance: ${id}`);
-  const selected = config[id];
-  if (!/^[a-z0-9-]+$/i.test(selected.stage)) throw new Error('Invalid stage ID');
-  const stage = await readJson(`../data/stages/${selected.stage}.json`);
+  const defaults = await readJson('../data/defaults.json');
   if (disposed || revision !== loadRevision) return;
-  const next = createDataStore(shared, stage, selected.overrides || {});
+  const next = createDataStore(defaults);
   renderer.apply(next.get());
   store = next;
-  instanceId = id;
-  stageId = selected.stage;
-  document.documentElement.dataset.instance = id;
-  document.documentElement.dataset.stage = stageId;
 }
 
 function change(layer, patch) {
@@ -48,7 +28,7 @@ function change(layer, patch) {
 }
 
 const ready = (async () => {
-  await loadInstance(instanceId);
+  await loadDefaults();
   await document.fonts.ready;
   if (disposed) return;
   renderer.fitRound();
@@ -66,13 +46,9 @@ window.Ticker = {
   update: patch => ready.then(() => change('overrides', patch)),
   updateShared: patch => ready.then(() => change('shared', patch)),
   updateStage: patch => ready.then(() => change('stage', patch)),
-  selectInstance: id => ready.then(() => {
-    if (id !== templateInstanceId) throw new Error(`This template is assigned to ${templateInstanceId}`);
-    return loadInstance(id);
-  }),
-  reloadData: () => ready.then(() => loadInstance(instanceId)),
+  reloadData: () => ready.then(() => loadDefaults()),
   getData: () => store?.get(),
-  getState: () => ({ instanceId, stageId, ...renderer.getState() }),
+  getState: () => renderer.getState(),
   dispose: () => { disposed = true; renderer.dispose(); window.removeEventListener('message', onMessage); }
 };
 
@@ -87,7 +63,6 @@ function onMessage(event) {
   if (event.source !== window.parent || event.origin !== location.origin || event.origin === 'null') return;
   const message = event.data;
   if (!message || message.type !== 'YCS_TICKER') return;
-  if (message.instanceId && message.instanceId !== instanceId) return;
   const actions = {
     show: () => window.Ticker.show(), hide: () => window.Ticker.hide(),
     pause: () => window.Ticker.pause(), resume: () => window.Ticker.resume(),

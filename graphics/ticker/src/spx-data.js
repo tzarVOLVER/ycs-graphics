@@ -30,6 +30,5 @@ export function mapSpxUpdate(input) {
     try { patch.showRoundsRemaining = booleanValue(fields.f2, 'spx'); }
     catch { throw new TypeError('f2 requires checkbox value 0 or 1'); }
   }
-  if (fields.f0 !== undefined && !['broadcast-1', 'broadcast-2', 'broadcast-3'].includes(fields.f0)) throw new TypeError('Unknown broadcast instance');
-  return { instanceId: fields.f0, patch: validatePatch(patch) };
+  return { patch: validatePatch(patch) };
 }

@@ -20,7 +20,7 @@ def package(graphic='ticker'):
         files += [SOURCE / 'assets' / font for font in ['ApotekComp-Regular.otf', 'Anybody-Bold.otf']]
     else:
         output = ROOT / 'dist' / 'YCS-SPX-Tickers.zip'
-        files = [SOURCE / 'ticker.html'] + [SOURCE / f'YCS-Ticker-{index}.html' for index in range(1, 4)]
+        files = [SOURCE / 'ticker.html']
         files += [SOURCE / 'ticker.css', SOURCE / 'adapters' / 'spx.js']
         for folder in ['assets', 'src', 'data']:
             files += sorted(path for path in (SOURCE / folder).rglob('*') if path.is_file())
@@ -56,7 +56,6 @@ def package(graphic='ticker'):
             'Use 1920 x 1080 output. Templates start hidden; control with SPX Play/Update/Stop.\n'
             'The YCS fork routes independent stage outputs; ticker uses the ticker slot.\n'
             'Stock SPX installations still need their own layer/output routing.\n'
-            'YCS-Ticker-1/2/3.html are retained only for compatibility with older imports.\n'
             'Keep all shared folders beside the HTML files, including YCS/shared.\n')
     print(output)
 
