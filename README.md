@@ -77,6 +77,8 @@ A separate [Current round data-link pilot](integrations/spx-data-link/README.md)
 
 One reusable template for 1920 x 1080 broadcast output:
 
+The SPX fork reads optional `editorSections` from the template definition to organize the rundown controls. Each section lists `fields` by ID and can set a `title`, `collapsed: true`, or `placement: 'header'` for header controls. Unlisted fields remain visible; templates without sections get a plain layout. These hints do not change graphic playback and stock SPX can ignore them. The template's `ycsSlot` supplies a default; the rundown Slot selector can inherit or override it.
+
 - `graphics/ticker/ticker.html` — use the same file in every stage rundown.
 
 The template starts hidden and uses SPX Play, Update and Stop. Controls include status, current round, date/location, rounds-remaining toggle/text, logo/background and timing. The Stories field (`f14`) supplies a JSON story list; additional JSON (`f1`) remains available for other overrides. Each output owns an independent iframe and its rundown supplies its own values/mappings. The template has no fixed broadcast identity and loads neutral defaults with an empty playlist. Routing belongs to the controller, not the template. Stock SPX still requires its own layer/output routing.
