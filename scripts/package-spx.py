@@ -8,7 +8,13 @@ SOURCE = ROOT / 'graphics' / 'ticker'
 
 
 def package(graphic='ticker'):
-    if graphic == 'match-status':
+    if graphic == 'winner':
+        output = ROOT / 'dist' / 'YCS-SPX-Winners.zip'
+        files = sorted(path for path in (ROOT / 'graphics/winner').iterdir()
+                       if path.suffix in ['.html', '.css', '.js'])
+        files += [SOURCE / 'assets/Anybody-Bold.otf',
+                  ROOT / 'graphics/match-status/assets/ApotekComp-Medium.otf']
+    elif graphic == 'match-status':
         output = ROOT / 'dist' / 'YCS-SPX-Match-Status.zip'
         files = sorted(path for path in (ROOT / 'graphics/match-status').rglob('*')
                        if path.is_file() and path.suffix != '.md')
@@ -31,7 +37,16 @@ def package(graphic='ticker'):
     with ZipFile(output, 'w', compression=ZIP_DEFLATED) as archive:
         for path in files:
             archive.write(path, 'YCS/' + path.relative_to(ROOT / 'graphics').as_posix())
-        if graphic == 'match-status':
+        if graphic == 'winner':
+            archive.writestr('YCS/winner/INSTALL.txt',
+                'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
+                'Import winner/blue.html and winner/red.html separately.\n'
+                'Keep the included shared code and font folders. Use 1920 x 1080 output.\n'
+                'f1 = player name; f2 = game number (1-3); f3 = player score (0-2).\n'
+                'A score of 2 displays MATCH WINNER; otherwise GAME X WINNER.\n'
+                'Score is not drawn; all three fields are exposed together in the editor for linking.\n'
+                'Both templates use the L3 slot and replace one another.\n')
+        elif graphic == 'match-status':
             archive.writestr('YCS/match-status/INSTALL.txt',
                 'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
                 'Import shuffling.html and siding.html as two separate templates.\n'
@@ -62,5 +77,5 @@ def package(graphic='ticker'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--graphic', choices=['ticker', 'lower-third', 'match-status'], default='ticker')
+    parser.add_argument('--graphic', choices=['ticker', 'lower-third', 'match-status', 'winner'], default='ticker')
     package(parser.parse_args().graphic)
