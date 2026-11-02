@@ -7,9 +7,10 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:transpa
 #winner.visible{visibility:visible}
 .plate{position:absolute;inset:0 0 2px;background:var(--side);border-radius:8px}
 .inset{position:absolute;left:4px;top:0;width:386px;height:60px;background:#212121;border-radius:8px}
-.name-mask{position:absolute;left:7px;top:0;width:381px;height:58px;overflow:hidden}
+.name-mask{position:absolute;left:7px;top:0;width:381px;height:60px;overflow:hidden}
 .label-mask{position:absolute;left:7px;top:60px;width:381px;height:36px;overflow:hidden}
 .text-box{height:100%;display:flex;align-items:center;justify-content:center}
 .fit-text{display:block;flex:none;white-space:nowrap;text-transform:uppercase;transform-origin:center}
-.name{font:500 50px WinnerApotek;color:#fff}
+/* Compensate for Apotek's font metrics so the visible capitals sit centrally. */
+.name{position:relative;top:2px;font:500 50px WinnerApotek;color:#fff}
 .result{font:700 28px WinnerAnybody;color:#212121;font-variation-settings:'wdth' 100}
