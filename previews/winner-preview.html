@@ -1,0 +1,51 @@
+<div id="winner-motion-preview">
+  <style>
+    @font-face{font-family:WinnerApotek;src:url('../graphics/match-status/assets/ApotekComp-Medium.otf') format('opentype');font-weight:500}
+    @font-face{font-family:WinnerAnybody;src:url('../graphics/ticker/assets/Anybody-Bold.otf') format('opentype');font-weight:700}
+    #winner-motion-preview{display:grid;gap:16px;color:var(--foreground)}
+    #winner-motion-preview .screen{position:relative;overflow:hidden;background:repeating-conic-gradient(var(--muted) 0% 25%,var(--background) 0% 50%) 0 0 / 28px 28px}
+    #winner-motion-preview .world{position:absolute;left:0;top:0;transform-origin:0 0;width:600px;height:230px}
+    #winner-motion-preview .winner{position:absolute;left:102.5px;top:68px;width:395px;height:96px;--side:#00a9ed}
+    #winner-motion-preview .plate{position:absolute;inset:0 0 2px;background:var(--side);border-radius:8px}
+    #winner-motion-preview .inset{position:absolute;left:4px;top:0;width:386px;height:60px;background:#212121;border-radius:8px}
+    #winner-motion-preview .name-mask{position:absolute;left:7px;top:0;width:381px;height:58px;overflow:hidden}
+    #winner-motion-preview .label-mask{position:absolute;left:7px;top:60px;width:381px;height:36px;overflow:hidden}
+    #winner-motion-preview .name,#winner-motion-preview .result{height:100%;display:flex;align-items:center;justify-content:center;white-space:nowrap;text-transform:uppercase;transform-origin:center}
+    #winner-motion-preview .name{font:500 50px WinnerApotek;color:#fff}
+    #winner-motion-preview .result{font:700 28px WinnerAnybody;color:#212121;font-variation-settings:'wdth' 100}
+  </style>
+  <div class="screen" role="img" aria-label="Animated winner nameplate preview"><div class="world"><div class="winner"><div class="plate"><div class="inset"></div></div><div class="name-mask"><div class="name">STEVEN DARLING</div></div><div class="label-mask"><div class="result">GAME 1 WINNER</div></div></div></div></div>
+  <div class="viz-controls">
+    <button class="btn btn-primary" type="button" data-action="play">Replay entrance</button>
+    <button class="btn" type="button" data-action="stop">Play exit</button>
+    <label class="form-label">View<select class="form-select" data-field="view"><option value="detail">Detail</option><option value="frame">1080p placement</option></select></label>
+  </div>
+  <div class="viz-controls">
+    <label class="form-label">Player<input class="form-control" data-field="name" value="STEVEN DARLING" maxlength="100"></label>
+    <label class="form-label">Game<select class="form-select" data-field="game"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+    <label class="form-label">Winner’s score<select class="form-select" data-field="score"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select></label>
+  </div>
+  <span class="sr-only" aria-live="polite" data-live></span>
+  <script>
+    (()=>{
+      const root=document.getElementById('winner-motion-preview'),$=q=>root.querySelector(q);
+      const screen=$('.screen'),world=$('.world'),winner=$('.winner');
+      const input=key=>$('[data-field="'+key+'"]');
+      let pending=[];
+      function fit(){for(const el of [$('.name'),$('.result')]){el.style.transform='';el.style.transform='scaleX('+Math.min(1,381/Math.max(el.scrollWidth,1))+')';}}
+      function layout(){const full=input('view').value==='frame',w=full?1920:600,h=full?1080:230;world.style.width=w+'px';world.style.height=h+'px';winner.style.left=(full?731:102.5)+'px';winner.style.top=(full?921:68)+'px';screen.style.aspectRatio=w+'/'+h;world.style.transform='scale('+screen.clientWidth/w+')';fit();}
+      function render(){const score=Number(input('score').value);$('.name').textContent=input('name').value;$('.result').textContent=score===2?'MATCH WINNER':'GAME '+input('game').value+' WINNER';$('[data-live]').textContent=$('.name').textContent+', '+$('.result').textContent;fit();}
+      function animate(exit=false){pending.forEach(a=>a.cancel());pending=[];const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const tracks=[[$('.plate'),{clipPath:'inset(0 50% 0 50%)'},{clipPath:'inset(0 0% 0 0%)'},0,450],[$('.name-mask'),{clipPath:'inset(0 50% 0 50%)'},{clipPath:'inset(0 0% 0 0%)'},85,365],[$('.label-mask'),{clipPath:'inset(0 50% 0 50%)'},{clipPath:'inset(0 0% 0 0%)'},140,310],[$('.name'),{translate:'0 58px'},{translate:'0 0px'},85,365],[$('.result'),{translate:'0 -36px'},{translate:'0 0px'},140,310]];
+        for(const [el,from,to,delay,duration] of tracks)pending.push(el.animate(exit?[to,from]:[from,to],{duration:reduced?1:exit?200:duration,delay:reduced||exit?0:delay,easing:'cubic-bezier(.07,.24,0,1)',fill:'both'}));
+      }
+      function restore(state){const s=state?.winnerPreview;if(!s)return;for(const key of ['name','game','score','view'])if(s[key]!==undefined)input(key).value=s[key];render();layout();}
+      function persist(){const s=Object.fromEntries(['name','game','score','view'].map(k=>[k,input(k).value]));window.openai?.setWidgetState?.({modelContent:{winnerPreview:s},privateContent:null}).catch(()=>{});}
+      root.querySelectorAll('[data-field]').forEach(el=>el.addEventListener('input',()=>{render();layout();persist();}));
+      $('[data-action="play"]').onclick=()=>animate();$('[data-action="stop"]').onclick=()=>animate(true);
+      new ResizeObserver(layout).observe(screen);document.fonts.ready.then(()=>{render();layout();});
+      window.addEventListener('openai:set_globals',e=>restore(e.detail?.globals?.widgetState));
+      render();layout();restore(window.openai?.widgetState);
+    })();
+  </script>
+</div>
