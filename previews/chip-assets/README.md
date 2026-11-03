@@ -14,5 +14,5 @@ This is a design review mockup, with no SPX lifecycle or template definition.
 Chip width is max(410, 87 + measured name width + 38) in 1080p pixels. Blue is
 anchored at x=145, y=815; Red mirrors around the full 1920px canvas. The artwork
 occupies the inner 196px end region and text may overlap it. The entrance ends
-at 500ms, shares the existing ease-out curve, and adds a small positional settle.
+at 500ms and shares the existing ease-out curve, with no positional settle.
 Exit retracts in 220ms. Neither entrance nor exit animates opacity.

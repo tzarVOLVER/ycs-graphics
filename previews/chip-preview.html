@@ -90,8 +90,6 @@
         ];
         $('.rule').style.transformOrigin='left center';
         for(const [q,from,to,delay,duration] of tracks)animations.push($(q).animate(out?[to,from]:[from,to],{duration:reduced?1:out?220:duration,delay:reduced||out?0:delay,easing:'cubic-bezier(.07,.24,0,1)',fill:'both'}));
-        // A restrained 5 px settle gives the entrance a little more energy.
-        if(!out)animations.push(chip.animate([{translate:(field('side').value==='red'?'5px 0':'-5px 0')},{translate:(field('side').value==='red'?'-2px 0':'2px 0'),offset:.78},{translate:'0px 0'}],{duration:reduced?1:500,easing:'ease-out',fill:'both'}));
       }
       function persist(){window.openai?.setWidgetState?.({modelContent:{chipPreview:{name:field('name').value,side:field('side').value,view:field('view').value}},privateContent:null}).catch(()=>{});}
       function restore(s){s=s?.chipPreview;if(!s)return;for(const k of ['name','side','view'])if(s[k]!==undefined)field(k).value=s[k];draw();}
