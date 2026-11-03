@@ -18,6 +18,16 @@ and artwork loading/export depends on the API and image host allowing browser
 access. The compositor remains a production utility alongside the broadcast
 templates and is not included in the SPX template ZIPs.
 
+## Player chips
+
+[Blue and Red player chips](graphics/player-chip/README.md) are separate templates
+with shared rendering and a 500ms masked reveal, without a settle or opacity
+fades. Each has a 410px minimum width and expands for its name with 38px end
+padding. All name, record and image fields are linkable. Build with
+`python scripts/package-spx.py --graphic player-chip`. Use independent `chip-blue`
+and `chip-red` slots to show both simultaneously; see the template guide for
+configuration and HTTP access to network artwork.
+
 ## Match status
 
 [Shuffling and Siding](graphics/match-status/README.md) are two separate SPX

@@ -8,7 +8,11 @@ SOURCE = ROOT / 'graphics' / 'ticker'
 
 
 def package(graphic='ticker'):
-    if graphic == 'winner':
+    if graphic == 'player-chip':
+        output = ROOT / 'dist' / 'YCS-SPX-Player-Chips.zip'
+        files = sorted(path for path in (ROOT / 'graphics/player-chip').rglob('*')
+                       if path.is_file() and path.suffix != '.md')
+    elif graphic == 'winner':
         output = ROOT / 'dist' / 'YCS-SPX-Winners.zip'
         files = sorted(path for path in (ROOT / 'graphics/winner').iterdir()
                        if path.suffix in ['.html', '.css', '.js'])
@@ -37,7 +41,15 @@ def package(graphic='ticker'):
     with ZipFile(output, 'w', compression=ZIP_DEFLATED) as archive:
         for path in files:
             archive.write(path, 'YCS/' + path.relative_to(ROOT / 'graphics').as_posix())
-        if graphic == 'winner':
+        if graphic == 'player-chip':
+            archive.writestr('YCS/player-chip/INSTALL.txt',
+                'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
+                'Import player-chip/blue.html and player-chip/red.html separately.\n'
+                'Configure separate chip-blue and chip-red slots to show both together.\n'
+                'Stock SPX defaults: Blue layer 3, Red layer 4. Canvas: 1920 x 1080.\n'
+                'All five fields are linkable. Image fields accept HTTP URLs or relative asset paths.\n'
+                'Network files must be exposed through an HTTP asset URL; do not use UNC/file URLs.\n')
+        elif graphic == 'winner':
             archive.writestr('YCS/winner/INSTALL.txt',
                 'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
                 'Import winner/blue.html and winner/red.html separately.\n'
@@ -77,5 +89,5 @@ def package(graphic='ticker'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--graphic', choices=['ticker', 'lower-third', 'match-status', 'winner'], default='ticker')
+    parser.add_argument('--graphic', choices=['ticker', 'lower-third', 'match-status', 'winner', 'player-chip'], default='ticker')
     package(parser.parse_args().graphic)

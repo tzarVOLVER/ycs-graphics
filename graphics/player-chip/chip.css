@@ -1,0 +1,35 @@
+@font-face{font-family:ChipName;src:url('./assets/Anybody-ExtraBold.ttf') format('truetype');font-weight:800}
+    @font-face{font-family:ChipRecord;src:url('./assets/Anybody-Black.ttf') format('truetype');font-weight:900}
+    @font-face{font-family:ChipCaption;src:url('./assets/Anybody-ExpandedMedium.ttf') format('truetype');font-weight:500}
+    #player-chip{position:absolute;left:145px;top:815px;width:410px;height:126px;--side:#00a9ed;transform-origin:center;visibility:hidden;pointer-events:none}
+    #player-chip[data-side=red]{--side:#f62162;transform:scaleX(-1)}
+    .shell{position:absolute;inset:0;border-radius:0 8px 8px 0;background:var(--side);overflow:hidden}
+    .fill{position:absolute;inset:0 5px 3px 3px;background:#212121;border-radius:0 5px 5px 0}
+    .deck-window{position:absolute;top:0;right:5px;width:196px;height:123px;overflow:hidden;border-radius:0 5px 5px 0;opacity:.44}
+    .deck{position:absolute;inset:0}
+    .deck img{position:absolute;left:0;top:-15.06%;width:100%;height:130.12%;object-fit:fill}
+    #player-chip[data-side=red] .deck img{transform:scaleX(-1)}
+    .deck-window::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,#212121,transparent)}
+    .rule{position:absolute;left:19px;top:57.87px;width:372.072px;height:2px}
+    .rule img{display:block;width:372.072px;height:2px}
+    .flag-mask{position:absolute;left:19px;top:13px;width:57px;height:35px;overflow:hidden}
+    .flag{width:57px;height:35px;object-fit:cover}
+    .logo-mask{position:absolute;left:19px;top:66px;width:57px;height:50px;overflow:hidden}
+    .logo{position:absolute;width:110.53%;height:105.95%;left:-5.26%;top:-2.97%}
+    .name-mask{position:absolute;left:87px;top:9px;height:49px;overflow:hidden}
+    .name{display:block;width:max-content;white-space:nowrap;color:white;font:800 47px ChipName;line-height:49px;text-transform:uppercase}
+    .record-mask{position:absolute;left:87px;top:68px;height:39px;overflow:hidden}
+    .record{display:block;color:white;font:900 33px ChipRecord;line-height:39px;white-space:nowrap;text-transform:uppercase}
+    .caption-mask{position:absolute;left:88px;top:100px;height:20px;overflow:hidden;width:200px}
+    .caption{display:block;width:max-content;color:#a3a3a3;font:500 14px ChipCaption;line-height:20px}
+    #player-chip[data-side=red] .copy{transform:scaleX(-1)}
+    #player-chip[data-side=red] .rule img{filter:hue-rotate(144deg)}
+
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:transparent}
+#player-chip.visible{visibility:visible}
+#player-chip[data-side=red]{left:auto;right:145px}
+.rule{transform-origin:left center}
+
+.text-copy{width:max-content}
+[hidden]{display:none!important}
