@@ -32,4 +32,5 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:transpa
 .rule{transform-origin:left center}
 
 .text-copy{width:max-content}
+#player-chip[data-format=advanced] .logo{inset:0;width:100%;height:100%;object-fit:contain}
 [hidden]{display:none!important}

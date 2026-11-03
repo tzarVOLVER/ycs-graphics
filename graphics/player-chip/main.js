@@ -1,4 +1,4 @@
-import { defaults, applyFields, chipWidth } from './data.js';
+import { defaults, applyFields, chipWidth, formatLogo } from './data.js';
 import { fitHorizontal } from '../shared/fit.js';
 import { createMotion } from './motion.js';
 
@@ -25,10 +25,12 @@ export function createPlayerChip(root) {
   for (const [, image] of images) image.addEventListener('error', () => { image.hidden = true; });
   function render() {
     name.textContent = state.name; record.textContent = state.record;
+    root.dataset.format = state.format;
     for (const [key, image] of images) {
-      if (image.getAttribute('src') === state[key]) continue;
-      image.hidden = !state[key];
-      if (state[key]) image.setAttribute('src', state[key]); else image.removeAttribute('src');
+      const value = key === 'logo' ? formatLogo(state.format) : state[key];
+      if (image.getAttribute('src') === value) continue;
+      image.hidden = !value;
+      if (value) image.setAttribute('src', value); else image.removeAttribute('src');
     }
     fit(); schedule();
   }

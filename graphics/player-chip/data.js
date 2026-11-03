@@ -1,7 +1,17 @@
 import { readSpxFields } from '../shared/data-contract.js';
 
-export const defaults = () => ({ name: 'SAM A.', record: '9W - 2L', flag: './assets/flag.png', logo: './assets/genesys.png', decktype: './assets/decktype.png' });
-const fields = { f1: 'name', f2: 'record', f3: 'flag', f4: 'logo', f5: 'decktype' };
+export const defaults = () => ({ name: 'SAM A.', record: '9W - 2L', flag: './assets/flag.png', format: 'genesys', decktype: './assets/decktype.png' });
+const fields = { f1: 'name', f2: 'record', f3: 'flag', f4: 'format', f5: 'decktype' };
+
+export function normalizeFormat(value) {
+  const format = value.trim().toLowerCase();
+  if (!['', 'advanced', 'genesys'].includes(format)) throw new TypeError('Format must be Advanced or Genesys');
+  return format;
+}
+
+export function formatLogo(format) {
+  return ({ advanced: './assets/ycs-logo.png', genesys: './assets/genesys.png' })[format] || '';
+}
 
 export function imageURL(value) {
   if (!value) return '';
@@ -19,7 +29,7 @@ export function applyFields(state, input) {
     if (!Object.hasOwn(data, field)) continue;
     const value = data[field];
     if (typeof value !== 'string' || value.length > 300) throw new TypeError(`${key} must be text of at most 300 characters`);
-    next[key] = ['flag', 'logo', 'decktype'].includes(key) ? imageURL(value) : value;
+    next[key] = key === 'format' ? normalizeFormat(value) : ['flag', 'decktype'].includes(key) ? imageURL(value) : value;
   }
   return next;
 }

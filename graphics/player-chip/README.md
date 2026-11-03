@@ -16,10 +16,13 @@ Images can be blank; failed images hide without a broken-image icon.
 | f1 | Player name |
 | f2 | Record, such as 9W - 2L |
 | f3 | Flag image URL |
-| f4 | Format logo URL |
+| f4 | Format: Advanced or Genesys (case-insensitive) |
 | f5 | Decktype image URL |
 
 All controls are exposed together and linkable. RECORD is a fixed caption.
+The format automatically selects the YCS logo for Advanced or the Genesys logo
+for Genesys. There is no exposed logo selector. Blank format hides the logo;
+unsupported format values reject the update and retain the previous graphic.
 Image fields accept HTTP(S) or relative asset URLs. The included Figma artwork
 is sample data. A network image folder must be served over HTTP by the SPX
 computer or another asset server; direct UNC/drive/file URLs do not work in the

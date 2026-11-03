@@ -2,7 +2,20 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { defaults, applyFields, chipWidth } from '../graphics/player-chip/data.js';
+import { defaults, applyFields, chipWidth, formatLogo } from '../graphics/player-chip/data.js';
+
+test('format chooses its built-in logo case-insensitively without exposing image paths', () => {
+  for (const value of ['Advanced', ' ADVANCED ', 'advanced']) {
+    const next = applyFields(defaults(), { f4: value });
+    assert.equal(next.format, 'advanced');
+    assert.equal(formatLogo(next.format), './assets/ycs-logo.png');
+  }
+  const genesys = applyFields(defaults(), { data: [{ id: 'f4', value: 'GENESYS' }] });
+  assert.equal(formatLogo(genesys.format), './assets/genesys.png');
+  assert.equal(formatLogo(applyFields(genesys, { f4: '' }).format), '');
+  assert.throws(() => applyFields(genesys, { f1: 'NEW NAME', f4: 'unknown' }));
+  assert.equal(genesys.name, 'SAM A.');
+});
 
 test('player chip data preserves partial updates, accepts classic SPX fields and validates atomically', () => {
   const initial = defaults();
@@ -32,6 +45,8 @@ test('Blue and Red chips share code, expose all five linkable controls and use i
     assert.equal(definition.editorSections.length, 1);
     assert.equal(definition.DataFields.length, 5);
     assert.ok(definition.DataFields.every(field => field.ftype === 'textfield'));
+    assert.equal(definition.DataFields.find(field => field.field === 'f4').title, 'Format');
+    assert.equal(definition.DataFields.some(field => /format logo/i.test(field.title)), false);
     assert.match(html, new RegExp(`data-side="${side}"`));
     assert.match(html, /src="\.\/spx.js"/);
   }
