@@ -1,5 +1,6 @@
 import { TopicTiming, topicKey, crossedRightEdge, advanceOffset } from './timing.js';
 import { fitHorizontal } from './fit.js';
+import { roundText } from './data.js';
 
 export class TickerRenderer {
   constructor(root) {
@@ -50,7 +51,7 @@ export class TickerRenderer {
     this.$('logo').src = data.logo || './assets/ycs-logo.png';
     this.$('bg').src = data.background || './assets/ticker-background.png';
     for (const [id, field] of [['date', 'dayDate'], ['location', 'location'], ['status', 'status'], ['round', 'currentRound'], ['remaining', 'roundsRemaining']]) {
-      this.$(id).textContent = data[field] || '';
+      this.$(id).textContent = id === 'round' ? roundText(data) : (data[field] || '');
     }
     this.$('right').classList.toggle('no-remaining', !data.showRoundsRemaining);
     this.fitRound();

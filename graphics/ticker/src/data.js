@@ -4,7 +4,9 @@ export const DEFAULT_TIMING = Object.freeze({
   headerSwapGapMs: 10
 });
 
-const textFields = ['logo', 'background', 'dayDate', 'location', 'status', 'currentRound', 'roundsRemaining'];
+const textFields = ['logo', 'background', 'dayDate', 'location', 'status', 'currentRound', 'customRound', 'roundsRemaining'];
+
+export const roundText = data => data.useCustomRound ? (data.customRound || '') : (data.currentRound || '');
 
 export function validatePatch(patch) {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new TypeError('Ticker data must be an object');
@@ -21,9 +23,11 @@ export function validatePatch(patch) {
       result[field] = patch[field];
     }
   }
-  if (Object.hasOwn(patch, 'showRoundsRemaining')) {
-    if (typeof patch.showRoundsRemaining !== 'boolean') throw new TypeError('showRoundsRemaining must be boolean');
-    result.showRoundsRemaining = patch.showRoundsRemaining;
+  for (const field of ['showRoundsRemaining', 'useCustomRound']) {
+    if (Object.hasOwn(patch, field)) {
+      if (typeof patch[field] !== 'boolean') throw new TypeError(`${field} must be boolean`);
+      result[field] = patch[field];
+    }
   }
   if (Object.hasOwn(patch, 'tickerItems')) {
     if (!Array.isArray(patch.tickerItems)) throw new TypeError('tickerItems must be an array');

@@ -5,6 +5,8 @@
   "location": "",
   "status": "",
   "currentRound": "",
+  "useCustomRound": false,
+  "customRound": "",
   "roundsRemaining": "",
   "showRoundsRemaining": false,
   "crawlSpeed": 145,

@@ -2,7 +2,7 @@ import { validatePatch } from './data.js';
 import { booleanValue, finiteNumber, readSpxFields } from './data-contract.js';
 export { readSpxFields } from './data-contract.js';
 
-const textFields = { f3: 'roundsRemaining', f4: 'status', f5: 'currentRound', f6: 'dayDate', f7: 'location', f11: 'logo', f12: 'background' };
+const textFields = { f3: 'roundsRemaining', f4: 'status', f5: 'currentRound', f6: 'dayDate', f7: 'location', f11: 'logo', f12: 'background', f16: 'customRound' };
 const numberFields = { f8: 'crawlSpeed', f9: 'topicEntryDelayMs', f10: 'headerTransitionMs' };
 
 export function mapSpxUpdate(input) {
@@ -26,9 +26,11 @@ export function mapSpxUpdate(input) {
       catch { throw new TypeError(`${field} requires a number`); }
     }
   }
-  if (Object.hasOwn(fields, 'f2')) {
-    try { patch.showRoundsRemaining = booleanValue(fields.f2, 'spx'); }
-    catch { throw new TypeError('f2 requires checkbox value 0 or 1'); }
+  for (const [field, name] of [['f2', 'showRoundsRemaining'], ['f15', 'useCustomRound']]) {
+    if (Object.hasOwn(fields, field)) {
+      try { patch[name] = booleanValue(fields[field], 'spx'); }
+      catch { throw new TypeError(`${field} requires checkbox value 0 or 1`); }
+    }
   }
   return { patch: validatePatch(patch) };
 }

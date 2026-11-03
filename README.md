@@ -85,6 +85,22 @@ The template starts hidden and uses SPX Play, Update and Stop. Controls include 
 
 Only `ticker.html` is supported. Numbered ticker entry points and their broadcast-instance configuration have been removed. Import the shared template into each rundown; the SPX controller owns output routing and data linking. There is no hidden broadcast selector.
 
+### Sheet-driven custom round text
+
+The linkable **Custom** checkbox (`f15`) selects **Custom text** (`f16`) instead
+of the normal **Round text** (`f5`). Both strings are retained, so turning Custom
+off immediately restores the latest generated label. An enabled Custom checkbox
+with blank custom text displays a blank label. Text is rendered literally and
+continues to fit horizontally; switching does not restart the crawler.
+
+For each stage's control row, map B (Show remaining) to `f2`, C (Custom) to `f15`,
+F (Status) to `f4`, G (Custom text) to `f16`, H (Round text) to `f5`, and I (Rounds
+remaining) to `f3`. Enable each desired chain link in the rundown, then Save and
+Play/Update to commit it. Round and remaining-round calculations stay in Sheets.
+Existing items without the two new fields keep their original behavior until
+their template definition and saved item fields are updated. Rebuild any event
+snapshot after the final show configuration is ready.
+
 ## Package
 
 ```powershell
