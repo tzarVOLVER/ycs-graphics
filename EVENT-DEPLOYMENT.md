@@ -37,3 +37,10 @@ This is a snapshot at export time. Later edits to the working checkout do not
 update an existing ZIP. Export again after finalizing the show, then rehearse on
 the actual LAN and vMix machines. `manifest.json` records the application commit
 and SHA-256 hashes for the bundled files.
+
+Decktype artwork served through `ycs.decktypeFolders` is external to the template
+assets. The exporter preserves that ordered folder configuration, but does not
+copy those external image folders. Before running on another computer, copy or
+make the PNG folders available there and update `spx/.local/ycs-dev.json` with
+that machine's paths. Restart SPX after changing the list. A local event copy is
+recommended when using Google Drive streamed folders during development.

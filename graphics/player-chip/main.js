@@ -1,4 +1,4 @@
-import { defaults, applyFields, chipWidth, formatLogo } from './data.js';
+import { defaults, applyFields, chipWidth, formatLogo, decktypeURL } from './data.js';
 import { fitHorizontal } from '../shared/fit.js';
 import { createMotion } from './motion.js';
 
@@ -23,11 +23,12 @@ export function createPlayerChip(root) {
   for (const element of [name, record]) resize.observe(element);
   const images = ['flag', 'logo', 'decktype'].map(key => [key, root.querySelector(`[data-image="${key}"]`)]);
   for (const [, image] of images) image.addEventListener('error', () => { image.hidden = true; });
+  for (const [, image] of images) image.addEventListener('load', () => { image.hidden = !image.getAttribute('src'); });
   function render() {
     name.textContent = state.name; record.textContent = state.record;
     root.dataset.format = state.format;
     for (const [key, image] of images) {
-      const value = key === 'logo' ? formatLogo(state.format) : state[key];
+      const value = key === 'logo' ? formatLogo(state.format) : key === 'decktype' ? decktypeURL(state.decktype) : state[key];
       if (image.getAttribute('src') === value) continue;
       image.hidden = !value;
       if (value) image.setAttribute('src', value); else image.removeAttribute('src');

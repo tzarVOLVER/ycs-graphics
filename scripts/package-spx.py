@@ -47,8 +47,10 @@ def package(graphic='ticker'):
                 'Import player-chip/blue.html and player-chip/red.html separately.\n'
                 'Configure separate chip-blue and chip-red slots to show both together.\n'
                 'Stock SPX defaults: Blue layer 3, Red layer 4. Canvas: 1920 x 1080.\n'
-                'All five fields are linkable. Image fields accept HTTP URLs or relative asset paths.\n'
-                'Network files must be exposed through an HTTP asset URL; do not use UNC/file URLs.\n')
+                'All five fields are linkable. Format selects its built-in logo.\n'
+                'Decktype is the API name without .png; the updated SPX fork serves /decktypes/NAME.png.\n'
+                'Set ycs.decktypeFolders to an ordered list of image folders and restart SPX.\n'
+                'First matching PNG wins. Folder paths are configured on the central server only.\n')
         elif graphic == 'winner':
             archive.writestr('YCS/winner/INSTALL.txt',
                 'Extract the entire YCS folder into SPX ASSETS/templates/.\n'

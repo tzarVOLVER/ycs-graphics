@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { defaults, applyFields, chipWidth, formatLogo } from '../graphics/player-chip/data.js';
+import { defaults, applyFields, chipWidth, formatLogo, decktypeURL } from '../graphics/player-chip/data.js';
 
 test('format chooses its built-in logo case-insensitively without exposing image paths', () => {
   for (const value of ['Advanced', ' ADVANCED ', 'advanced']) {
@@ -19,15 +19,25 @@ test('format chooses its built-in logo case-insensitively without exposing image
 
 test('player chip data preserves partial updates, accepts classic SPX fields and validates atomically', () => {
   const initial = defaults();
-  const next = applyFields(initial, { data: [{ id: 'f1', value: '<PLAYER>' }, { id: 'f2', value: '10W - 2L' }, { id: 'f5', value: 'http://assets.local/decks/card.png' }] });
+  const next = applyFields(initial, { data: [{ id: 'f1', value: '<PLAYER>' }, { id: 'f2', value: '10W - 2L' }, { id: 'f5', value: 'ANCIENT GEAR' }] });
   assert.equal(next.name, '<PLAYER>'); assert.equal(next.record, '10W - 2L');
   assert.equal(next.flag, initial.flag);
-  assert.equal(next.decktype, 'http://assets.local/decks/card.png');
+  assert.equal(next.decktype, 'ANCIENT GEAR');
   assert.equal(applyFields(next, { f5: '' }).decktype, '');
   for (const patch of [{ f1: 3 }, { f2: 'X'.repeat(301) }, { f5: 'file:///C:/card.png' }, { f3: 'javascript:alert(1)' }, { f4: 'C:\\art\\logo.png' }, { f5: '\\\\ART-PC\\Decktypes\\card.png' }]) {
     assert.throws(() => applyFields(initial, patch));
     assert.deepEqual(initial, defaults());
   }
+});
+
+test('decktype names resolve to PNG URLs with safe encoding for spaces and punctuation', () => {
+  for (const name of ['ANCIENT GEAR', '@IGNISTER MALISS', 'A+B & C#1', "KING'S DECK", '100% DECK']) {
+    const state = applyFields(defaults(), { f5: name });
+    assert.equal(decktypeURL(state.decktype), '/decktypes/' + encodeURIComponent(name + '.png'));
+  }
+  assert.equal(decktypeURL(applyFields(defaults(), { f5: '  ANCIENT GEAR  ' }).decktype), '/decktypes/ANCIENT%20GEAR.png');
+  assert.equal(decktypeURL(''), '');
+  for (const value of ['../secret', 'folder/deck', 'http://host/card.png', '.hidden', 'DECK.', 'DECK?']) assert.throws(() => applyFields(defaults(), { f5: value }));
 });
 
 test('chip width keeps a 410px minimum, expands with a 38px end margin and caps only at the screen edge', () => {
@@ -46,6 +56,7 @@ test('Blue and Red chips share code, expose all five linkable controls and use i
     assert.equal(definition.DataFields.length, 5);
     assert.ok(definition.DataFields.every(field => field.ftype === 'textfield'));
     assert.equal(definition.DataFields.find(field => field.field === 'f4').title, 'Format');
+    assert.equal(definition.DataFields.find(field => field.field === 'f5').title, 'Decktype');
     assert.equal(definition.DataFields.some(field => /format logo/i.test(field.title)), false);
     assert.match(html, new RegExp(`data-side="${side}"`));
     assert.match(html, /src="\.\/spx.js"/);

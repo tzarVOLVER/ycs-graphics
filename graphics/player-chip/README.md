@@ -17,16 +17,37 @@ Images can be blank; failed images hide without a broken-image icon.
 | f2 | Record, such as 9W - 2L |
 | f3 | Flag image URL |
 | f4 | Format: Advanced or Genesys (case-insensitive) |
-| f5 | Decktype image URL |
+| f5 | Decktype name, matching its PNG filename without .png |
 
 All controls are exposed together and linkable. RECORD is a fixed caption.
 The format automatically selects the YCS logo for Advanced or the Genesys logo
 for Genesys. There is no exposed logo selector. Blank format hides the logo;
 unsupported format values reject the update and retain the previous graphic.
-Image fields accept HTTP(S) or relative asset URLs. The included Figma artwork
-is sample data. A network image folder must be served over HTTP by the SPX
-computer or another asset server; direct UNC/drive/file URLs do not work in the
-remote browser outputs. Hosting that folder is a separate deployment setting.
+Flag image accepts HTTP(S) or a relative asset URL. Decktype accepts the API's
+name, for example ANCIENT GEAR, and requests `/decktypes/ANCIENT%20GEAR.png` from
+the SPX server. Spaces and punctuation are URL-encoded. Empty names hide artwork;
+missing images leave the name and record visible. Decktype names are filenames,
+not paths or URLs. There is no exposed image path for decktype or format logo.
+
+The SPX fork serves multiple image folders through `ycs.decktypeFolders`:
+
+```json
+"decktypeFolders": [
+  "C:/YCS/Decktypes/Event",
+  "H:/Shared drives/YCS 2024/CHARACTERWORKS/ASSETS/DECKTYPES"
+]
+```
+
+Folders are searched in order; the first matching PNG wins. Missing/unavailable
+folders fall through to the next folder. Files are matched directly in each
+folder, not recursively. Filename case follows the server filesystem (normally
+case-insensitive on Windows). Only the central SPX computer needs access to
+these folders. Change paths for the event machine, then restart SPX. The route
+is read-only, exposes no directory listing, and cannot follow a file symlink
+outside its configured folder. Templates use the same origin as their output.
+
+The template ZIP includes the overlay and assets, but the `/decktypes` endpoint
+requires the updated SPX fork or an equivalent HTTP asset route on another host.
 
 Build with `python scripts/package-spx.py --graphic player-chip`. Extract the
 whole YCS folder into SPX ASSETS/templates, preserving shared helpers and assets,

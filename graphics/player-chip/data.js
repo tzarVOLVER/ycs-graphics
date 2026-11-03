@@ -1,6 +1,6 @@
 import { readSpxFields } from '../shared/data-contract.js';
 
-export const defaults = () => ({ name: 'SAM A.', record: '9W - 2L', flag: './assets/flag.png', format: 'genesys', decktype: './assets/decktype.png' });
+export const defaults = () => ({ name: 'SAM A.', record: '9W - 2L', flag: './assets/flag.png', format: 'genesys', decktype: '' });
 const fields = { f1: 'name', f2: 'record', f3: 'flag', f4: 'format', f5: 'decktype' };
 
 export function normalizeFormat(value) {
@@ -11,6 +11,18 @@ export function normalizeFormat(value) {
 
 export function formatLogo(format) {
   return ({ advanced: './assets/ycs-logo.png', genesys: './assets/genesys.png' })[format] || '';
+}
+
+export function decktypeName(value) {
+  const name = value.trim();
+  if (/[<>:"/\\|?*\u0000-\u001f\u007f]/.test(name) || name.startsWith('.') || /[. ]$/.test(name))
+    throw new TypeError('Decktype must be a name, not a file path or URL');
+  if (name.length > 240) throw new TypeError('Decktype name is too long');
+  return name;
+}
+
+export function decktypeURL(name) {
+  return name ? '/decktypes/' + encodeURIComponent(name + '.png') : '';
 }
 
 export function imageURL(value) {
@@ -29,7 +41,7 @@ export function applyFields(state, input) {
     if (!Object.hasOwn(data, field)) continue;
     const value = data[field];
     if (typeof value !== 'string' || value.length > 300) throw new TypeError(`${key} must be text of at most 300 characters`);
-    next[key] = key === 'format' ? normalizeFormat(value) : ['flag', 'decktype'].includes(key) ? imageURL(value) : value;
+    next[key] = key === 'format' ? normalizeFormat(value) : key === 'decktype' ? decktypeName(value) : key === 'flag' ? imageURL(value) : value;
   }
   return next;
 }
