@@ -1,0 +1,106 @@
+<div id="player-chip-preview">
+  <style>
+    @font-face{font-family:ChipName;src:url('./chip-assets/Anybody-ExtraBold.ttf') format('truetype');font-weight:800}
+    @font-face{font-family:ChipRecord;src:url('./chip-assets/Anybody-Black.ttf') format('truetype');font-weight:900}
+    @font-face{font-family:ChipCaption;src:url('./chip-assets/Anybody-ExpandedMedium.ttf') format('truetype');font-weight:500}
+    #player-chip-preview{display:grid;gap:14px;color:light-dark(#20252c,#edf1f5);font-family:Arial,sans-serif}
+    #player-chip-preview .stage{position:relative;overflow:hidden;background:repeating-conic-gradient(light-dark(#e4e8ed,#20262b) 0% 25%,light-dark(#f3f5f7,#181d22) 0% 50%) 0 0/28px 28px}
+    #player-chip-preview .world{position:absolute;left:0;top:0;width:900px;height:250px;transform-origin:0 0}
+    #player-chip-preview .reference{position:absolute;inset:0;width:1920px;height:1080px;object-fit:cover;display:none}
+    #player-chip-preview[data-view=frame] .reference{display:block}
+    #player-chip-preview .chip{position:absolute;left:30px;top:62px;width:410px;height:126px;--side:#00a9ed;transform-origin:center}
+    #player-chip-preview[data-side=red] .chip{--side:#f62162;transform:scaleX(-1)}
+    #player-chip-preview .shell{position:absolute;inset:0;border-radius:0 8px 8px 0;background:var(--side);overflow:hidden}
+    #player-chip-preview .fill{position:absolute;inset:0 5px 3px 3px;background:#212121;border-radius:0 5px 5px 0}
+    #player-chip-preview .deck-window{position:absolute;top:0;right:5px;width:196px;height:123px;overflow:hidden;border-radius:0 5px 5px 0;opacity:.44}
+    #player-chip-preview .deck{position:absolute;inset:0}
+    #player-chip-preview .deck img{position:absolute;left:0;top:-15.06%;width:100%;height:130.12%;object-fit:fill}
+    #player-chip-preview[data-side=red] .deck img{transform:scaleX(-1)}
+    #player-chip-preview .deck-window::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,#212121,transparent)}
+    #player-chip-preview .rule{position:absolute;left:19px;top:57.87px;width:372.072px;height:2px}
+    #player-chip-preview .rule img{display:block;width:372.072px;height:2px}
+    #player-chip-preview .flag-mask{position:absolute;left:19px;top:13px;width:57px;height:35px;overflow:hidden}
+    #player-chip-preview .flag{width:57px;height:35px;object-fit:cover}
+    #player-chip-preview .logo-mask{position:absolute;left:19px;top:66px;width:57px;height:50px;overflow:hidden}
+    #player-chip-preview .logo{position:absolute;width:110.53%;height:105.95%;left:-5.26%;top:-2.97%}
+    #player-chip-preview .name-mask{position:absolute;left:87px;top:9px;height:49px;overflow:hidden}
+    #player-chip-preview .name{display:block;width:max-content;white-space:nowrap;color:white;font:800 47px ChipName;line-height:49px;text-transform:uppercase}
+    #player-chip-preview .record-mask{position:absolute;left:87px;top:68px;height:39px;overflow:hidden}
+    #player-chip-preview .record{display:block;color:white;font:900 33px ChipRecord;line-height:39px;white-space:nowrap;text-transform:uppercase}
+    #player-chip-preview .caption-mask{position:absolute;left:88px;top:100px;height:20px;overflow:hidden;width:200px}
+    #player-chip-preview .caption{display:block;width:max-content;color:#a3a3a3;font:500 14px ChipCaption;line-height:20px}
+    #player-chip-preview[data-side=red] .copy{transform:scaleX(-1)}
+    #player-chip-preview[data-side=red] .rule img{filter:hue-rotate(144deg)}
+    #player-chip-preview .controls{display:flex;flex-wrap:wrap;align-items:end;gap:10px}
+    #player-chip-preview label{display:grid;gap:5px;font-size:13px}
+    #player-chip-preview button,#player-chip-preview input,#player-chip-preview select{font:14px Arial,sans-serif;padding:8px 10px;border:1px solid light-dark(#aeb9c5,#50606e);border-radius:4px;background:light-dark(#fff,#202c36);color:inherit;min-height:36px;max-width:100%}
+    #player-chip-preview input{width:270px;box-sizing:border-box}
+    #player-chip-preview button{cursor:pointer}
+    #player-chip-preview .measure{font-size:12px;color:light-dark(#4e5b67,#afc0ce)}
+  </style>
+  <div class="stage" role="img" aria-label="Expanding player chip animation"><div class="world">
+    <img class="reference" src="./chip-assets/reference-preview.webp" alt="">
+    <div class="chip"><div class="shell"><div class="fill"></div><div class="deck-window"><div class="deck"><img src="./chip-assets/decktype-preview.webp" alt="Decktype artwork"></div></div></div>
+      <div class="rule"><img src="./chip-assets/line.svg" alt=""></div>
+      <div class="flag-mask"><img class="flag copy" src="./chip-assets/flag-preview.webp" alt="USA"></div>
+      <div class="logo-mask"><img class="logo copy" src="./chip-assets/genesys-preview.webp" alt="Genesys"></div>
+      <div class="name-mask"><div class="name-motion"><span class="name copy">SAM A.</span></div></div>
+      <div class="record-mask"><div class="record-motion"><span class="record copy">9W - 2L</span></div></div>
+      <div class="caption-mask"><div class="caption-motion"><span class="caption copy">RECORD</span></div></div>
+    </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button type="button" data-action="play">Replay entrance</button><button type="button" data-action="out">Play exit</button>
+    <label>Side<select data-field="side"><option value="blue">Blue</option><option value="red">Red · mirrored</option></select></label>
+    <label>View<select data-field="view"><option value="detail">Detail</option><option value="frame">1080p placement</option></select></label>
+  </div>
+  <div class="controls"><label>Player name<input data-field="name" value="SAM A." maxlength="80"></label><button type="button" data-action="short">Short name</button><button type="button" data-action="long">Long name</button><output class="measure" aria-live="polite"></output></div>
+  <script>
+    (()=>{
+      const root=document.getElementById('player-chip-preview'),$=q=>root.querySelector(q),field=k=>$('[data-field="'+k+'"]');
+      const chip=$('.chip'),world=$('.world'),stage=$('.stage');let animations=[],shown=true;
+      function cancel(){animations.forEach(a=>a.cancel());animations=[];}
+      function layout(){
+        const width=Math.ceil(Math.max(410,87+$('.name').offsetWidth+38)),full=field('view').value==='frame',red=field('side').value==='red';
+        root.dataset.view=full?'frame':'detail';root.dataset.side=red?'red':'blue';chip.style.width=width+'px';
+        const w=full?1920:Math.max(900,width+60),h=full?1080:250;
+        world.style.width=w+'px';world.style.height=h+'px';world.style.transform='scale('+stage.clientWidth/w+')';stage.style.aspectRatio=w+'/'+h;
+        chip.style.left=(red?w-(full?145:30)-width:(full?145:30))+'px';chip.style.top=(full?815:62)+'px';
+        $('.name-mask').style.width=$('.name').offsetWidth+'px';$('.record-mask').style.width=$('.record').offsetWidth+'px';
+        $('output').textContent=width+' px wide · 38 px end margin';
+      }
+      function draw(){cancel();$('.name').textContent=field('name').value;layout();if(!shown)hide();}
+      const nodes=['.shell','.rule','.flag-mask','.logo-mask','.name-mask','.record-mask','.caption-mask'];
+      function hide(){for(const q of nodes)$(q).style.visibility='hidden';}
+      function motion(out=false){cancel();shown=!out;for(const q of nodes)$(q).style.visibility='';
+        const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const tracks=[
+          ['.shell',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)'},0,460],
+          ['.deck',{translate:'24px 0'},{translate:'0px 0'},70,430],
+          ['.rule',{scale:'0 1'},{scale:'1 1'},65,400],
+          ['.flag-mask',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)'},100,310],
+          ['.logo-mask',{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)'},160,320],
+          ['.name-mask',{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)'},110,350],
+          ['.name-motion',{translate:'-22px 0'},{translate:'0px 0'},110,350],
+          ['.record-mask',{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)'},155,325],
+          ['.record-motion',{translate:'0 32px'},{translate:'0 0px'},155,325],
+          ['.caption-mask',{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)'},205,295],
+          ['.caption-motion',{translate:'0 16px'},{translate:'0 0px'},205,295]
+        ];
+        $('.rule').style.transformOrigin='left center';
+        for(const [q,from,to,delay,duration] of tracks)animations.push($(q).animate(out?[to,from]:[from,to],{duration:reduced?1:out?220:duration,delay:reduced||out?0:delay,easing:'cubic-bezier(.07,.24,0,1)',fill:'both'}));
+        // A restrained 5 px settle gives the entrance a little more energy.
+        if(!out)animations.push(chip.animate([{translate:(field('side').value==='red'?'5px 0':'-5px 0')},{translate:(field('side').value==='red'?'-2px 0':'2px 0'),offset:.78},{translate:'0px 0'}],{duration:reduced?1:500,easing:'ease-out',fill:'both'}));
+      }
+      function persist(){window.openai?.setWidgetState?.({modelContent:{chipPreview:{name:field('name').value,side:field('side').value,view:field('view').value}},privateContent:null}).catch(()=>{});}
+      function restore(s){s=s?.chipPreview;if(!s)return;for(const k of ['name','side','view'])if(s[k]!==undefined)field(k).value=s[k];draw();}
+      $('[data-action="play"]').onclick=()=>motion();$('[data-action="out"]').onclick=()=>motion(true);
+      $('[data-action="short"]').onclick=()=>{field('name').value='SAM A.';draw();motion();persist();};
+      $('[data-action="long"]').onclick=()=>{field('name').value='CREIGHTON M.';draw();motion();persist();};
+      root.querySelectorAll('[data-field]').forEach(el=>el.addEventListener('input',()=>{draw();persist();}));
+      new ResizeObserver(layout).observe(stage);document.fonts.ready.then(()=>{draw();layout();});
+      window.addEventListener('openai:set_globals',e=>restore(e.detail?.globals?.widgetState));draw();restore(window.openai?.widgetState);
+    })();
+  </script>
+</div>
