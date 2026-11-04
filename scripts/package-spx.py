@@ -45,7 +45,7 @@ def package(graphic='ticker'):
             archive.writestr('YCS/player-chip/INSTALL.txt',
                 'Extract the entire YCS folder into SPX ASSETS/templates/.\n'
                 'Import player-chip/blue.html and player-chip/red.html separately.\n'
-                'Configure separate chip-blue and chip-red slots to show both together.\n'
+                'Both use the existing BUG slot (internal ID ticker) and replace each other.\n'
                 'Stock SPX defaults: Blue layer 3, Red layer 4. Canvas: 1920 x 1080.\n'
                 'All five fields are linkable. Format selects its built-in logo.\n'
                 'Decktype is the API name without .png; the updated SPX fork serves /decktypes/NAME.png.\n'

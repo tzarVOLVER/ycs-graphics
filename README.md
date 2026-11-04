@@ -25,8 +25,8 @@ with shared rendering and a 500ms masked reveal, without a settle or opacity
 fades. Each has a 410px minimum width and expands for its name with 38px end
 padding. Name, record, format and image fields are linkable. Format automatically
 selects the YCS logo for Advanced or the Genesys logo for Genesys. Build with
-`python scripts/package-spx.py --graphic player-chip`. Use independent `chip-blue`
-and `chip-red` slots to show both simultaneously; see the template guide for
+`python scripts/package-spx.py --graphic player-chip`. Both use the existing BUG
+slot and replace one another; see the template guide for
 configuration and HTTP access to network artwork.
 
 ## Match status

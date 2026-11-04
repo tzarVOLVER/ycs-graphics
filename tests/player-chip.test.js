@@ -47,11 +47,11 @@ test('chip width keeps a 410px minimum, expands with a 38px end margin and caps 
   assert.equal(chipWidth(3000), 1775);
 });
 
-test('Blue and Red chips share code, expose all five linkable controls and use independent slots', async () => {
+test('Blue and Red chips share code, expose all five linkable controls and use the BUG slot', async () => {
   for (const side of ['blue', 'red']) {
     const html = await readFile(new URL(`../graphics/player-chip/${side}.html`, import.meta.url), 'utf8');
     const definition = vm.runInNewContext('(' + html.match(/window\.SPXGCTemplateDefinition = (\{[\s\S]*?\});/)[1] + ')');
-    assert.equal(definition.ycsSlot, 'chip-' + side);
+    assert.equal(definition.ycsSlot, 'ticker');
     assert.equal(definition.editorSections.length, 1);
     assert.equal(definition.DataFields.length, 5);
     assert.ok(definition.DataFields.every(field => field.ftype === 'textfield'));

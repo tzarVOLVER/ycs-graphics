@@ -53,14 +53,8 @@ Build with `python scripts/package-spx.py --graphic player-chip`. Extract the
 whole YCS folder into SPX ASSETS/templates, preserving shared helpers and assets,
 then import `YCS/player-chip/blue.html` and `YCS/player-chip/red.html`.
 
-For simultaneous playback, add these slots to `ycs.slots` in the SPX configuration:
-
-```json
-"chip-blue": {"label":"BUG Blue","order":11,"exitMs":250},
-"chip-red": {"label":"BUG Red","order":12,"exitMs":250}
-```
-
-The templates default to those independent slots; restart SPX after adding them.
-Other forks/configurations need equivalent assignments. Stock SPX uses separate
-web layers 3 and 4. Existing projects/rundowns are not imported or rewritten by
+Both templates default to the existing BUG slot (internal ID `ticker`). Playing
+either replaces the graphic currently in that slot on the same output. No
+additional slots are needed. Stock SPX uses web layers 3 and 4. Existing
+projects/rundowns are not imported or rewritten by
 extracting the package. Rebuild the Orlando deployment snapshot after final setup.
