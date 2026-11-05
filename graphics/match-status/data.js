@@ -41,6 +41,11 @@ export function applyFields(state, input) {
   if (state.variant === 'siding')
     for (const [field, key] of Object.entries(scoreFields)) {
       if (!Object.hasOwn(fields, field)) continue;
+      // A linked value the data source does not have arrives blank.
+      if (fields[field] === '') {
+        next[key] = '';
+        continue;
+      }
       const score = finiteNumber(fields[field]);
       if (score < 0) throw new TypeError('Scores must be non-negative numbers');
       next[key] = String(score);
