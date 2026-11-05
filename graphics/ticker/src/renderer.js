@@ -48,8 +48,12 @@ export class TickerRenderer {
     this.data = structuredClone(data);
     this.timing.delayMs = data.topicEntryDelayMs;
     this.root.style.setProperty('--topic-transition-duration', `${data.headerTransitionMs}ms`);
-    this.$('logo').src = data.logo || './assets/ycs-logo.png';
-    this.$('bg').src = data.background || './assets/ticker-background.png';
+    // Reassigning an unchanged src reloads and re-rasterizes the artwork on every
+    // update. A failed image is still retried, as before.
+    for (const [id, src] of [['logo', data.logo || './assets/ycs-logo.png'], ['bg', data.background || './assets/ticker-background.png']]) {
+      const image = this.$(id);
+      if (image.getAttribute('src') !== src || (image.complete && image.naturalWidth === 0)) image.src = src;
+    }
     for (const [id, field] of [['date', 'dayDate'], ['location', 'location'], ['status', 'status'], ['round', 'currentRound'], ['remaining', 'roundsRemaining']]) {
       this.$(id).textContent = id === 'round' ? roundText(data) : (data[field] || '');
     }

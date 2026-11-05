@@ -52,7 +52,11 @@ function harness(variant = 'siding') {
   const images = ['leftFlag', 'rightFlag'].map((key) => ({
     dataset: { image: key },
     attributes: {},
+    getAttribute(key) {
+      return this.attributes[key] ?? null;
+    },
     setAttribute(key, value) {
+      this.sets = (this.sets || 0) + 1;
       this.attributes[key] = value;
     },
     removeAttribute(key) {
@@ -348,4 +352,19 @@ test('Update waits at most about one second for a font that never loads', async 
   assert.equal(await settled(update), false);
   t.mock.timers.tick(1);
   assert.equal(await settled(update), true);
+});
+
+test('text-only updates keep unchanged flag src attributes; changed or failed flags still load', async (t) => {
+  const r = harness();
+  t.after(() => r.api.dispose());
+  const [left, right] = r.images;
+  const before = [left.sets, right.sets];
+  for (let i = 0; i < 5; i++) await r.api.update({ f5: 'ROUND ' + i, f9: String(i) });
+  assert.deepEqual([left.sets, right.sets], before);
+  await r.api.update({ f7: '/flags/ca.png' });
+  assert.equal(left.attributes.src, '/flags/ca.png');
+  assert.equal(right.sets, before[1]);
+  Object.assign(right, { complete: true, naturalWidth: 0 }); // Broken image: retry as before.
+  await r.api.update({ f5: 'ROUND 6' });
+  assert.equal(right.sets, before[1] + 1);
 });

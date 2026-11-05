@@ -19,7 +19,7 @@ test('SPX story lists preserve identity, take native precedence and reject inval
 test('live playlist edits preserve visible stories, offset, transforms and header timing while replacing the unseen tail',()=>{
   const children=[],track={children,style:{transform:'translateX(-90px)'},get lastElementChild(){return children.at(-1);}};
   for(const [index,entry]of [story('a'),story('b'),story('c')].entries())children.push({entry,offsetLeft:index*170,remove(){children.splice(children.indexOf(this),1);}});
-  const elements=Object.fromEntries(['logo','bg','date','location','status','round','remaining','right'].map(id=>[id,{classList:{toggle(){}}}]));
+  const elements=Object.fromEntries(['logo','bg','date','location','status','round','remaining','right'].map(id=>[id,{getAttribute:()=>null,classList:{toggle(){}}}]));
   const renderer={track,viewport:{clientWidth:250},offset:-90,paused:false,headerKey:'existing header',headerTimer:45,timing:{delayMs:180},root:{style:{setProperty(){}}},$:id=>elements[id],fitRound(){},data:{tickerItems:[story('a'),story('b'),story('c')]}};
   TickerRenderer.prototype.apply.call(renderer,{tickerItems:[story('x'),story('b','Edited B'),story('c','Edited C')],topicEntryDelayMs:180,headerTransitionMs:180});
   assert.equal(children.length,2);assert.equal(children[1].entry.subtopic,'b','visible text remains untouched');assert.equal(renderer.nextIndex,2,'continue after the visible Story ID');assert.equal(renderer.offset,-90);assert.equal(track.style.transform,'translateX(-90px)');assert.equal(renderer.headerTimer,45);assert.equal(renderer.headerKey,'existing header');assert.equal(renderer.paused,false);
@@ -28,7 +28,7 @@ test('live playlist edits preserve visible stories, offset, transforms and heade
 
 test('the first SPX playlist replaces hidden bootstrap stories and headers before Play',()=>{
   const children=[{entry:story('sample'),offsetLeft:0}],track={children,style:{transform:'translateX(-90px)'},replaceChildren(){children.length=0;},get firstElementChild(){return children[0];}};
-  const elements=Object.fromEntries(['logo','bg','date','location','status','round','remaining','right','category','topic','topic-inner'].map(id=>[id,{textContent:'SAMPLE',classList:{toggle(){},remove(){}}}]));
+  const elements=Object.fromEntries(['logo','bg','date','location','status','round','remaining','right','category','topic','topic-inner'].map(id=>[id,{textContent:'SAMPLE',getAttribute:()=>null,classList:{toggle(){},remove(){}}}]));
   const headers=[],resets=[];
   const renderer={hasShown:false,track,offset:-90,nextIndex:1,headerKey:'sample',headerTimer:null,timing:{reset:item=>resets.push(item)},root:{style:{setProperty(){}}},$:id=>elements[id],fitRound(){},fillTrack(){if(this.items.length)children.push({entry:this.items[this.nextIndex++]});},setHeader(item,instant){headers.push({item,instant});this.headerKey=item.id;},seedPositions(){this.seeded=true;},data:{tickerItems:[story('sample')]}};
   const fresh=story('mapped','Mapped Orlando story');
@@ -38,4 +38,18 @@ test('the first SPX playlist replaces hidden bootstrap stories and headers befor
   assert.deepEqual(headers,[{item:fresh,instant:true}]);assert.deepEqual(resets,[null,fresh]);assert.equal(renderer.seeded,true);
   TickerRenderer.prototype.apply.call(renderer,{tickerItems:[],topicEntryDelayMs:180,headerTransitionMs:180});
   assert.equal(children.length,0);assert.equal(elements.category.textContent,'');assert.equal(elements.topic.textContent,'');assert.equal(renderer.headerKey,null);
+});
+
+test('updates keep unchanged logo/background src attributes; changed or failed artwork still loads',()=>{
+  const image=src=>({src,sets:0,getAttribute(){return this.src;},complete:true,naturalWidth:100});
+  const elements=Object.fromEntries(['date','location','status','round','remaining','right'].map(id=>[id,{getAttribute:()=>null,classList:{toggle(){}}}]));
+  elements.logo=image('./assets/ycs-logo.png');elements.bg=image('./assets/ticker-background.png');
+  for(const id of ['logo','bg']){let value=elements[id].src;Object.defineProperty(elements[id],'src',{get:()=>value,set(next){this.sets++;value=next;}});}
+  const items=[story('a')];
+  const renderer={hasShown:true,track:{children:[]},viewport:{clientWidth:250},timing:{},root:{style:{setProperty(){}}},$:id=>elements[id],fitRound(){},data:{tickerItems:items}};
+  const apply=patch=>TickerRenderer.prototype.apply.call(renderer,{tickerItems:items,topicEntryDelayMs:180,headerTransitionMs:180,...patch});
+  for(let i=0;i<5;i++)apply({currentRound:'ROUND '+i});
+  assert.equal(elements.logo.sets,0);assert.equal(elements.bg.sets,0);
+  apply({logo:'./new-logo.png'});assert.equal(elements.logo.src,'./new-logo.png');assert.equal(elements.logo.sets,1);assert.equal(elements.bg.sets,0);
+  elements.bg.naturalWidth=0;apply({logo:'./new-logo.png'});assert.equal(elements.bg.sets,1,'a failed background is retried as before');assert.equal(elements.logo.sets,1);
 });

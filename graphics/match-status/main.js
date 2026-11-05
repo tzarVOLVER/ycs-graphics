@@ -45,6 +45,9 @@ export function createMatchStatus(root) {
     for (const image of images) {
       const value = state[image.dataset.image];
       image.hidden = !value;
+      // Reassigning an unchanged src reloads and re-rasterizes the flag on every
+      // update. A failed image is still retried, as before.
+      if (image.getAttribute('src') === value && !(image.complete && image.naturalWidth === 0)) continue;
       if (value) image.setAttribute('src', value);
       else image.removeAttribute('src');
     }
