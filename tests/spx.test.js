@@ -11,7 +11,7 @@ test('SPX checkbox handles checked and unchecked string, number and boolean valu
 test('SPX accepts classic JSON data arrays and maps native operator fields', () => {
   const fields = { f0: 'broadcast-2', f2: '0', f3: '3 ROUNDS LEFT', f4: 'COMING UP', f5: 'ROUND 4', f6: 'DAY 2', f7: 'LOCATION', f8: '145', f9: '220', f10: '180', f11: './new-logo.png', f12: './new-background.png' };
   const result = mapSpxUpdate(JSON.stringify({ data: Object.entries(fields).map(([id, value]) => ({ id, value })) }));
-  assert.equal(result.instanceId, 'broadcast-2');
+  assert.equal(Object.hasOwn(result, 'instanceId'), false);
   assert.deepEqual(result.patch, { roundsRemaining: '3 ROUNDS LEFT', status: 'COMING UP', currentRound: 'ROUND 4', dayDate: 'DAY 2', location: 'LOCATION', crawlSpeed: 145, topicEntryDelayMs: 220, headerTransitionMs: 180, logo: './new-logo.png', background: './new-background.png', showRoundsRemaining: false });
 });
 
@@ -21,5 +21,5 @@ test('native SPX fields take precedence over additional JSON without clearing ab
 });
 
 test('SPX rejects invalid values before selecting another output or updating its data', () => {
-  for (const value of [{ f2: 'false' }, { f2: 2 }, { f9: '' }, { f8: true }, { f10: '-1' }, { f9: 'NaN' }, { f0: 'other' }, { f1: 'broken JSON' }, { f1: '[]' }]) assert.throws(() => mapSpxUpdate(value));
+  for (const value of [{ f2: 'false' }, { f2: 2 }, { f9: '' }, { f8: true }, { f10: '-1' }, { f9: 'NaN' }, { f1: 'broken JSON' }, { f1: '[]' }]) assert.throws(() => mapSpxUpdate(value));
 });

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YCS Blue Player Chip</title><link rel="stylesheet" href="./chip.css"><script>window.SPXGCTemplateDefinition = {
+  "description": "YCS Blue Player Chip",
+  "playserver": "OVERLAY",
+  "playchannel": "1",
+  "playlayer": "3",
+  "webplayout": "3",
+  "steps": "1",
+  "out": "manual",
+  "uicolor": "2",
+  "dataformat": "json",
+  "ycsSlot": "ticker",
+  "editorSections": [
+    {
+      "fields": [
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+        "f5"
+      ]
+    }
+  ],
+  "DataFields": [
+    {
+      "field": "f1",
+      "ftype": "textfield",
+      "title": "Player name",
+      "value": "SAM A."
+    },
+    {
+      "field": "f2",
+      "ftype": "textfield",
+      "title": "Record",
+      "value": "9W - 2L"
+    },
+    {
+      "field": "f3",
+      "ftype": "textfield",
+      "title": "Flag image",
+      "value": "./assets/flag.png"
+    },
+    {
+      "field": "f4",
+      "ftype": "textfield",
+      "title": "Format",
+      "value": "Genesys"
+    },
+    {
+      "field": "f5",
+      "ftype": "textfield",
+      "title": "Decktype",
+      "value": ""
+    }
+  ]
+};</script></head>
+<body><div id="player-chip" data-side="blue" aria-label="blue player info chip">
+<div class="shell"><div class="fill"></div><div class="deck-window"><div class="deck"><img data-image="decktype" alt=""></div></div></div>
+<div class="rule"><img src="./assets/line.svg" alt=""></div>
+<div class="flag-mask"><img class="flag copy" data-image="flag" src="./assets/flag.png" alt=""></div>
+<div class="logo-mask"><img class="logo copy" data-image="logo" src="./assets/genesys.png" alt=""></div>
+<div class="name-mask"><div class="name-motion"><div class="copy text-copy"><span class="name"></span></div></div></div>
+<div class="record-mask"><div class="record-motion"><div class="copy text-copy"><span class="record"></span></div></div></div>
+<div class="caption-mask"><div class="caption-motion"><span class="caption copy">RECORD</span></div></div>
+</div><script src="./spx.js"></script></body></html>

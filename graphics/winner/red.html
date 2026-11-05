@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YCS Red Winner</title><link rel="stylesheet" href="./winner.css"><script>window.SPXGCTemplateDefinition = {
+  "description": "YCS Red Winner",
+  "playserver": "OVERLAY",
+  "playchannel": "1",
+  "playlayer": "2",
+  "webplayout": "2",
+  "steps": "1",
+  "out": "manual",
+  "uicolor": "1",
+  "dataformat": "json",
+  "ycsSlot": "lower-third",
+  "editorSections": [
+    {
+      "fields": [
+        "f1",
+        "f2",
+        "f3"
+      ]
+    }
+  ],
+  "DataFields": [
+    {
+      "field": "f1",
+      "ftype": "textfield",
+      "title": "Player name",
+      "value": "STEVEN DARLING"
+    },
+    {
+      "field": "f2",
+      "ftype": "number",
+      "title": "Game number",
+      "value": "1",
+      "min": 1,
+      "max": 3
+    },
+    {
+      "field": "f3",
+      "ftype": "number",
+      "title": "Player score",
+      "value": "1",
+      "min": 0,
+      "max": 2
+    }
+  ]
+};</script></head>
+<body><div id="winner" data-side="red" aria-label="red player winner"><div class="plate"><div class="inset"></div></div><div class="name-mask"><div class="text-box name-box"><span class="name fit-text"></span></div></div><div class="label-mask"><div class="text-box label-box"><span class="result fit-text"></span></div></div></div><script src="./spx.js"></script></body></html>

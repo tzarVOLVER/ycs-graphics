@@ -1,5 +1,6 @@
 import { TopicTiming, topicKey, crossedRightEdge, advanceOffset } from './timing.js';
 import { fitHorizontal } from './fit.js';
+import { roundText } from './data.js';
 
 export class TickerRenderer {
   constructor(root) {
@@ -15,6 +16,7 @@ export class TickerRenderer {
     this.items = [];
     this.paused = false;
     this.disposed = false;
+    this.hasShown = false;
     this.headerTimer = null;
     this.frame = null;
     this.headerKey = null;
@@ -46,17 +48,50 @@ export class TickerRenderer {
     this.data = structuredClone(data);
     this.timing.delayMs = data.topicEntryDelayMs;
     this.root.style.setProperty('--topic-transition-duration', `${data.headerTransitionMs}ms`);
-    this.$('logo').src = data.logo || './assets/ycs-logo.png';
-    this.$('bg').src = data.background || './assets/ticker-background.png';
+    // Reassigning an unchanged src reloads and re-rasterizes the artwork on every
+    // update. A failed image is still retried, as before.
+    for (const [id, src] of [['logo', data.logo || './assets/ycs-logo.png'], ['bg', data.background || './assets/ticker-background.png']]) {
+      const image = this.$(id);
+      if (image.getAttribute('src') !== src || (image.complete && image.naturalWidth === 0)) image.src = src;
+    }
     for (const [id, field] of [['date', 'dayDate'], ['location', 'location'], ['status', 'status'], ['round', 'currentRound'], ['remaining', 'roundsRemaining']]) {
-      this.$(id).textContent = data[field] || '';
+      this.$(id).textContent = id === 'round' ? roundText(data) : (data[field] || '');
     }
     this.$('right').classList.toggle('no-remaining', !data.showRoundsRemaining);
     this.fitRound();
     if (playlistChanged) {
-      // Already queued text stays in place. New items join at the offscreen tail.
+      if (this.hasShown === false) {
+        // The initial SPX update arrives after bootstrap data has filled the
+        // hidden track. Nothing has aired yet: replace that sample content in
+        // full before Play rather than preserving it as a visible live story.
+        this.track.replaceChildren();
+        this.offset = 0;
+        this.track.style.transform = 'translateX(0px)';
+        this.items = data.tickerItems;
+        this.nextIndex = 0;
+        clearTimeout(this.headerTimer);
+        this.headerTimer = null;
+        this.headerKey = null;
+        this.timing.reset(null);
+        this.$('category').textContent = '';
+        this.$('topic').textContent = '';
+        this.$('topic-inner').classList.remove('out');
+        this.fillTrack();
+        const first = this.track.firstElementChild;
+        if (first) { this.setHeader(first.entry, true); this.timing.reset(first.entry); }
+        this.seedPositions();
+        return;
+      }
+      // Preserve everything already entering/on screen. Replace only the unseen
+      // tail so an unpublished story does not wait through the old lookahead.
+      for (const node of [...this.track.children]) {
+        if (node.offsetLeft + this.offset >= this.viewport.clientWidth) node.remove();
+      }
+      const anchor = this.track.lastElementChild?.entry;
       this.items = data.tickerItems;
-      this.nextIndex = 0;
+      const key = item => item?.id ? 'id:' + item.id : JSON.stringify(item);
+      const previous = anchor ? this.items.findIndex(item => key(item) === key(anchor)) : -1;
+      this.nextIndex = this.items.length ? (previous + 1) % this.items.length : 0;
     }
   }
 
@@ -172,6 +207,7 @@ export class TickerRenderer {
   }
 
   show() {
+    this.hasShown = true;
     this.root.classList.add('visible');
     this.fitRound();
     this.scheduleFit();

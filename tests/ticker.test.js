@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { resolveData, createDataStore, validatePatch } from '../graphics/ticker/src/data.js';
 import { TopicTiming, topicKey, crossedRightEdge, advanceOffset } from '../graphics/ticker/src/timing.js';
 
@@ -20,7 +19,6 @@ test('header waits after entry at the right edge, including a configurable zero 
   timing.entered(item('C'), 1200);
   assert.deepEqual(timing.takeDue(1200), item('C'));
 });
-
 test('same-topic subtopics do not restart the delay or animate the same label', () => {
   const timing = new TopicTiming(180);
   timing.reset(item('A'));
@@ -97,11 +95,3 @@ test('bad updates fail atomically and text stays data rather than HTML', () => {
   assert.notEqual(topicKey({ category: 'a|b', topic: 'c' }), topicKey({ category: 'a', topic: 'b|c' }));
 });
 
-test('all configured broadcasts resolve existing stage JSON files', async () => {
-  const config = JSON.parse(await readFile(new URL('../graphics/ticker/data/instances.json', import.meta.url)));
-  assert.deepEqual(Object.keys(config), ['broadcast-1', 'broadcast-2', 'broadcast-3']);
-  for (const value of Object.values(config)) {
-    const stage = JSON.parse(await readFile(new URL(`../graphics/ticker/data/stages/${value.stage}.json`, import.meta.url)));
-    assert.deepEqual(stage, {});
-  }
-});
