@@ -99,7 +99,8 @@ Only `ticker.html` is supported. Numbered ticker entry points and their broadcas
 ### Sheet-driven custom round text
 
 The linkable **Custom** checkbox (`f15`) selects **Custom text** (`f16`) instead
-of the normal **Round text** (`f5`). Both strings are retained, so turning Custom
+of the normal **Round text** (`f5`), on the ticker and on the shuffling and siding
+templates. Both strings are retained, so turning Custom
 off immediately restores the latest generated label. An enabled Custom checkbox
 with blank custom text displays a blank label. Text is rendered literally and
 continues to fit horizontally; switching does not restart the crawler.
