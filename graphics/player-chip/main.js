@@ -34,9 +34,18 @@ export function createPlayerChip(root) {
       if (value) image.setAttribute('src', value); else image.removeAttribute('src');
     }
     fit(); schedule();
+    // Decode while the output still hides this frame, so the first on-air frame
+    // does not decode multi-megapixel artwork and stall the shared output page.
+    return Promise.all(images.filter(([, image]) => image.getAttribute('src')).map(([, image]) => image.decode().catch(() => {})));
+  }
+  // A slow remote flag must not hold Play longer than about one second.
+  function bounded(promise, milliseconds = 1000) {
+    let timer;
+    const limit = new Promise(resolve => { timer = view.setTimeout(resolve, milliseconds); });
+    return Promise.race([promise, limit]).finally(() => view.clearTimeout(timer));
   }
   const api = {
-    update(input) { if (disposed) return; state = applyFields(state, input); render(); },
+    update(input) { if (disposed) return; state = applyFields(state, input); return bounded(render()); },
     play() { if (!disposed) { motion.play(); schedule(); } },
     stop() { return motion.stop(); },
     getState() { return structuredClone(state); },

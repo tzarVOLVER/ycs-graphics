@@ -3,6 +3,36 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { defaults, applyFields, chipWidth, formatLogo, decktypeURL } from '../graphics/player-chip/data.js';
+import { createPlayerChip } from '../graphics/player-chip/main.js';
+
+function chipHarness() {
+  class Observer { observe() {} disconnect() {} }
+  const view = Object.assign(new EventTarget(), {
+    ResizeObserver: Observer, requestAnimationFrame: () => 1, cancelAnimationFrame() {},
+    setTimeout: (callback, ms) => setTimeout(callback, ms), clearTimeout: id => clearTimeout(id)
+  });
+  const text = () => ({ textContent: '', style: {}, offsetWidth: 100, scrollWidth: 100 });
+  const image = src => {
+    const attributes = src ? { src } : {};
+    const element = Object.assign(new EventTarget(), {
+      hidden: false, decoded: [], pending: [], sets: 0,
+      getAttribute: key => attributes[key] ?? null,
+      setAttribute(key, value) { this.sets++; attributes[key] = value; },
+      removeAttribute: key => { delete attributes[key]; },
+      decode() { element.decoded.push(attributes.src); return new Promise((resolve, reject) => element.pending.push({ resolve, reject })); }
+    });
+    return element;
+  };
+  const elements = { '.name': text(), '.record': text(), '.name-mask': text(), '.record-mask': text(),
+    '[data-image="flag"]': image('./assets/flag.png'), '[data-image="logo"]': image('./assets/genesys.png'), '[data-image="decktype"]': image() };
+  const root = { style: {}, dataset: {}, classList: new Set(), ownerDocument: { defaultView: view }, querySelector: selector => elements[selector] };
+  root.classList.remove = root.classList.delete;
+  const api = createPlayerChip(root);
+  const images = ['flag', 'logo', 'decktype'].map(key => elements[`[data-image="${key}"]`]);
+  for (const element of images) element.pending.length = element.decoded.length = 0; // Ignore the construction-time render.
+  return { api, view, images };
+}
+const settled = async promise => { let done = false; promise.then(() => { done = true; }); await new Promise(setImmediate); return done; };
 
 test('format chooses its built-in logo case-insensitively without exposing image paths', () => {
   for (const value of ['Advanced', ' ADVANCED ', 'advanced']) {
@@ -61,4 +91,30 @@ test('Blue and Red chips share code, expose all five linkable controls and use t
     assert.match(html, new RegExp(`data-side="${side}"`));
     assert.match(html, /src="\.\/spx.js"/);
   }
+});
+
+test('Update resolves only after every shown chip image is decoded, so Play never decodes on air', async t => {
+  const r = chipHarness();
+  t.after(() => r.api.dispose());
+  const [flag, logo, decktype] = r.images;
+  const update = r.api.update({ f4: 'Advanced', f5: 'SNAKE-EYE' });
+  assert.deepEqual([flag.decoded, logo.decoded, decktype.decoded], [['./assets/flag.png'], ['./assets/ycs-logo.png'], ['/decktypes/SNAKE-EYE.png']]);
+  assert.equal(await settled(update), false);
+  flag.pending[0].resolve(); logo.pending[0].reject(new Error('EncodingError'));
+  assert.equal(await settled(update), false, 'still waiting for the decktype');
+  decktype.pending[0].resolve();
+  assert.equal(await settled(update), true, 'a failed image decode is not an update error');
+  r.api.update({ f5: '' });
+  assert.deepEqual(decktype.decoded, ['/decktypes/SNAKE-EYE.png'], 'images without a src are not decoded');
+});
+
+test('A slow chip image holds Update for at most about one second', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const r = chipHarness();
+  t.after(() => r.api.dispose());
+  const update = r.api.update({ f3: 'https://slow.example/flag.png' });
+  t.mock.timers.tick(999);
+  assert.equal(await settled(update), false);
+  t.mock.timers.tick(1);
+  assert.equal(await settled(update), true);
 });
