@@ -30,7 +30,9 @@ function harness(variant = 'siding') {
     },
     cancelAnimationFrame(id) {
       frames.delete(id);
-    }
+    },
+    setTimeout: (callback, ms) => setTimeout(callback, ms),
+    clearTimeout: (id) => clearTimeout(id)
   });
   const fonts = Object.assign(new EventTarget(), { ready: Promise.resolve() });
   const labels = [
@@ -50,7 +52,11 @@ function harness(variant = 'siding') {
   const images = ['leftFlag', 'rightFlag'].map((key) => ({
     dataset: { image: key },
     attributes: {},
+    getAttribute(key) {
+      return this.attributes[key] ?? null;
+    },
     setAttribute(key, value) {
+      this.sets = (this.sets || 0) + 1;
       this.attributes[key] = value;
     },
     removeAttribute(key) {
@@ -310,4 +316,55 @@ test('two importable entry points have fixed captions, one checkbox, correct def
     for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
       assert.ok((await stat(new URL(match[1], root))).size > 0);
   }
+});
+
+const settled = async (promise) => {
+  let done = false;
+  promise.then(() => {
+    done = true;
+  });
+  await new Promise(setImmediate);
+  return done;
+};
+
+test('Update waits for the frame’s own fonts before SPX shows it, then refits', async (t) => {
+  const r = harness('shuffling');
+  t.after(() => r.api.dispose());
+  let loaded;
+  r.fonts.ready = new Promise((resolve) => {
+    loaded = resolve;
+  });
+  const update = r.api.update({ f4: 'CREIGHTON PAPADOPOULOS' });
+  assert.equal(await settled(update), false);
+  r.labels[0].scrollWidth = r.labels[0].offsetWidth = 50; // Real font metrics arrive.
+  loaded();
+  assert.equal(await settled(update), true);
+  assert.equal(r.labels[0].style.transform, 'scaleX(1)', 'fit runs before Play');
+});
+
+test('Update waits at most about one second for a font that never loads', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const r = harness();
+  t.after(() => r.api.dispose());
+  r.fonts.ready = new Promise(() => {});
+  const update = r.api.update({ f4: 'NAME' });
+  t.mock.timers.tick(999);
+  assert.equal(await settled(update), false);
+  t.mock.timers.tick(1);
+  assert.equal(await settled(update), true);
+});
+
+test('text-only updates keep unchanged flag src attributes; changed or failed flags still load', async (t) => {
+  const r = harness();
+  t.after(() => r.api.dispose());
+  const [left, right] = r.images;
+  const before = [left.sets, right.sets];
+  for (let i = 0; i < 5; i++) await r.api.update({ f5: 'ROUND ' + i, f9: String(i) });
+  assert.deepEqual([left.sets, right.sets], before);
+  await r.api.update({ f7: '/flags/ca.png' });
+  assert.equal(left.attributes.src, '/flags/ca.png');
+  assert.equal(right.sets, before[1]);
+  Object.assign(right, { complete: true, naturalWidth: 0 }); // Broken image: retry as before.
+  await r.api.update({ f5: 'ROUND 6' });
+  assert.equal(right.sets, before[1] + 1);
 });

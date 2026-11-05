@@ -30,6 +30,14 @@ export function createMatchStatus(root) {
   doc.fonts?.addEventListener('loadingdone', scheduleFit);
   doc.fonts?.ready.then(scheduleFit);
   view.addEventListener('resize', scheduleFit);
+  // A slow or failed font must not hold Play longer than about one second.
+  function bounded(promise, milliseconds = 1000) {
+    let timer;
+    const limit = new Promise((resolve) => {
+      timer = view.setTimeout(resolve, milliseconds);
+    });
+    return Promise.race([promise, limit]).finally(() => view.clearTimeout(timer));
+  }
 
   function render() {
     for (const label of labels)
@@ -37,6 +45,9 @@ export function createMatchStatus(root) {
     for (const image of images) {
       const value = state[image.dataset.image];
       image.hidden = !value;
+      // Reassigning an unchanged src reloads and re-rasterizes the flag on every
+      // update. A failed image is still retried, as before.
+      if (image.getAttribute('src') === value && !(image.complete && image.naturalWidth === 0)) continue;
       if (value) image.setAttribute('src', value);
       else image.removeAttribute('src');
     }
@@ -49,6 +60,9 @@ export function createMatchStatus(root) {
     update(input) {
       state = applyFields(state, input);
       render();
+      // SPX awaits update before showing the frame and calling Play. Let the fonts
+      // this layout requested finish loading first, so names are not blank on air.
+      return bounded(doc.fonts?.ready).then(fit);
     },
     play() {
       motion.play();
