@@ -50,6 +50,14 @@ test('a font that never arrives holds winner Play for about a second at most', a
   winner.dispose();
 });
 
+test('a blank linked game number or score stays blank and does not reject the update', () => {
+  const state = applyFields(defaults(), { f1: '', f2: '', f3: '' });
+  assert.equal(state.name, '');
+  assert.equal(winnerLabel(state), 'WINNER');
+  assert.equal(winnerLabel(applyFields(state, { f2: '2' })), 'GAME 2 WINNER');
+  assert.equal(winnerLabel(applyFields(state, { f3: '2' })), 'MATCH WINNER');
+});
+
 test('winner labels use the linked game number until a score of 2 takes precedence', () => {
   for (const game of [1, 2, 3]) for (const score of [0, 1, 2]) {
     const state = applyFields(defaults(), JSON.stringify({ f2: String(game), f3: String(score) }));
@@ -64,7 +72,7 @@ test('winner partial and classic SPX updates validate atomically and retain lite
   const state = defaults();
   assert.equal(applyFields(state, { f1: '<b>PLAYER</b>' }).name, '<b>PLAYER</b>');
   assert.equal(applyFields(state, { data: [{ id: 'f2', value: '2' }] }).game, 2);
-  for (const fields of [{ f2: '' }, { f2: 'NaN' }, { f2: 0 }, { f2: 4 }, { f2: 1.5 }, { f3: -1 }, { f3: 3 }, { f3: 0.5 }, { f1: 12 }]) {
+  for (const fields of [{ f2: 'NaN' }, { f2: 0 }, { f2: 4 }, { f2: 1.5 }, { f3: -1 }, { f3: 3 }, { f3: 0.5 }, { f1: 12 }]) {
     assert.throws(() => applyFields(state, fields));
     assert.deepEqual(state, defaults());
   }

@@ -98,6 +98,11 @@ function harness(variant = 'siding') {
   };
 }
 
+test('blank linked names, flags and scores stay blank and do not reject the update', () => {
+  const state = applyFields(defaults('siding'), { f4: '', f6: '', f7: '', f8: '', f9: '', f10: '' });
+  for (const key of ['leftName', 'rightName', 'leftFlag', 'rightFlag', 'leftScore', 'rightScore']) assert.equal(state[key], '', key);
+});
+
 test('shuffling and siding accept classic SPX payloads with independent fields and scores', () => {
   for (const variant of ['shuffling', 'siding']) {
     const state = applyFields(
