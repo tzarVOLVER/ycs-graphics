@@ -30,7 +30,9 @@ function harness(variant = 'siding') {
     },
     cancelAnimationFrame(id) {
       frames.delete(id);
-    }
+    },
+    setTimeout: (callback, ms) => setTimeout(callback, ms),
+    clearTimeout: (id) => clearTimeout(id)
   });
   const fonts = Object.assign(new EventTarget(), { ready: Promise.resolve() });
   const labels = [
@@ -310,4 +312,40 @@ test('two importable entry points have fixed captions, one checkbox, correct def
     for (const match of html.matchAll(/(?:src|href)="(\.\/[^"?#]+)"/g))
       assert.ok((await stat(new URL(match[1], root))).size > 0);
   }
+});
+
+const settled = async (promise) => {
+  let done = false;
+  promise.then(() => {
+    done = true;
+  });
+  await new Promise(setImmediate);
+  return done;
+};
+
+test('Update waits for the frame’s own fonts before SPX shows it, then refits', async (t) => {
+  const r = harness('shuffling');
+  t.after(() => r.api.dispose());
+  let loaded;
+  r.fonts.ready = new Promise((resolve) => {
+    loaded = resolve;
+  });
+  const update = r.api.update({ f4: 'CREIGHTON PAPADOPOULOS' });
+  assert.equal(await settled(update), false);
+  r.labels[0].scrollWidth = r.labels[0].offsetWidth = 50; // Real font metrics arrive.
+  loaded();
+  assert.equal(await settled(update), true);
+  assert.equal(r.labels[0].style.transform, 'scaleX(1)', 'fit runs before Play');
+});
+
+test('Update waits at most about one second for a font that never loads', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const r = harness();
+  t.after(() => r.api.dispose());
+  r.fonts.ready = new Promise(() => {});
+  const update = r.api.update({ f4: 'NAME' });
+  t.mock.timers.tick(999);
+  assert.equal(await settled(update), false);
+  t.mock.timers.tick(1);
+  assert.equal(await settled(update), true);
 });
