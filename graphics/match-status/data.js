@@ -9,15 +9,20 @@ export function defaults(variant) {
     leftFlag: './assets/us.png',
     rightFlag: './assets/us.png',
     currentRound: 'ADVANCED ROUND 10 OF 15',
+    useCustomRound: false,
+    customRound: '',
     showRoundsRemaining: true,
     roundsRemaining: '13 ROUNDS REMAINING TODAY',
     ...(variant === 'siding' ? { leftScore: '0', rightScore: '1' } : {})
   };
 }
 
-const textFields = { f3: 'roundsRemaining', f4: 'leftName', f5: 'currentRound', f6: 'rightName' };
+const textFields = { f3: 'roundsRemaining', f4: 'leftName', f5: 'currentRound', f6: 'rightName', f16: 'customRound' };
 const flagFields = { f7: 'leftFlag', f8: 'rightFlag' };
 const scoreFields = { f9: 'leftScore', f10: 'rightScore' };
+
+// Same rule as the ticker: both strings are kept, and Custom with blank text shows blank.
+export const roundText = (state) => (state.useCustomRound ? state.customRound : state.currentRound);
 
 export function applyFields(state, input) {
   const fields = readSpxFields(input);
@@ -38,6 +43,7 @@ export function applyFields(state, input) {
     next[key] = normalized;
   }
   if (Object.hasOwn(fields, 'f2')) next.showRoundsRemaining = booleanValue(fields.f2, 'spx');
+  if (Object.hasOwn(fields, 'f15')) next.useCustomRound = booleanValue(fields.f15, 'spx');
   if (state.variant === 'siding')
     for (const [field, key] of Object.entries(scoreFields)) {
       if (!Object.hasOwn(fields, field)) continue;

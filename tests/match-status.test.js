@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
-import { defaults, applyFields } from '../graphics/match-status/data.js';
+import { defaults, applyFields, roundText } from '../graphics/match-status/data.js';
 import { createMatchStatus } from '../graphics/match-status/main.js';
 import { createMotion } from '../graphics/match-status/motion.js';
 
@@ -97,6 +97,59 @@ function harness(variant = 'siding') {
     }
   };
 }
+
+test('custom round text replaces the round label only while Custom is on, keeping both strings', async () => {
+  for (const variant of ['shuffling', 'siding']) {
+    const r = harness(variant);
+    const round = () => r.labels.find((label) => label.dataset.field === 'currentRound').textContent;
+    await r.api.update({ f5: 'ROUND 2' });
+    assert.equal(round(), 'ROUND 2');
+    await r.api.update({ f15: '0', f16: 'TOP 8' });
+    assert.equal(round(), 'ROUND 2', 'custom text waits for the checkbox');
+    await r.api.update({ f15: '1' });
+    assert.equal(round(), 'TOP 8');
+    await r.api.update({ f5: 'ROUND 3' });
+    assert.equal(round(), 'TOP 8', 'a new round does not replace custom text');
+    await r.api.update({ f16: '' });
+    assert.equal(round(), '', 'Custom with blank text shows blank');
+    await r.api.update({ f16: 'FINALS', f15: '0' });
+    assert.equal(round(), 'ROUND 3', 'turning Custom off restores the latest round');
+    assert.equal(r.api.getState().customRound, 'FINALS');
+    r.api.dispose();
+  }
+});
+
+test('without the custom fields the round label is unchanged, and bad values are refused', () => {
+  for (const variant of ['shuffling', 'siding']) {
+    assert.equal(roundText(defaults(variant)), defaults(variant).currentRound);
+    assert.equal(roundText(applyFields(defaults(variant), { f5: 'ROUND 9' })), 'ROUND 9');
+    for (const fields of [{ f15: 'yes' }, { f15: 2 }, { f16: 5 }, { f16: 'x'.repeat(301) }])
+      assert.throws(() => applyFields(defaults(variant), fields), JSON.stringify(fields));
+    assert.equal(applyFields(defaults(variant), { f15: '1' }).useCustomRound, true);
+  }
+});
+
+test('shuffling and siding declare Custom and Custom text like the ticker', async () => {
+  const load = async (name) => {
+    const html = await readFile(new URL('../graphics/' + name, import.meta.url), 'utf8');
+    const script = html.match(/<script>\s*window\.SPXGCTemplateDefinition[\s\S]*?<\/script>/)[0].replace(/<\/?script>/g, '');
+    const window = {};
+    runInNewContext(script, { window });
+    return window.SPXGCTemplateDefinition;
+  };
+  const ticker = await load('ticker/ticker.html');
+  const shape = (definition, field) => {
+    const { ftype, title, value } = definition.DataFields.find((candidate) => candidate.field === field);
+    return { ftype, title, value };
+  };
+  for (const name of ['match-status/shuffling.html', 'match-status/siding.html']) {
+    const definition = await load(name);
+    for (const field of ['f15', 'f16']) assert.deepEqual(shape(definition, field), shape(ticker, field), name + ' ' + field);
+    assert.deepEqual(Array.from(definition.editorSections[0].fields), ['f2', 'f15'], name);
+    assert.deepEqual(Array.from(definition.editorSections[1].fields), ['f3', 'f5', 'f16'], name);
+    assert.deepEqual(Array.from(definition.DataFields).slice(-2).map((field) => field.field), ['f15', 'f16'], 'added at the end, so row labels do not change');
+  }
+});
 
 test('blank linked names, flags and scores stay blank and do not reject the update', () => {
   const state = applyFields(defaults('siding'), { f4: '', f6: '', f7: '', f8: '', f9: '', f10: '' });
@@ -296,7 +349,7 @@ test('SPX lifecycle bridge queues Update/Play/Stop while loading and recovers fr
   r.view.dispatchEvent(new Event('pagehide'));
 });
 
-test('two importable entry points have fixed captions, one checkbox, correct defaults and complete local assets', async () => {
+test('two importable entry points have fixed captions, two checkboxes, correct defaults and complete local assets', async () => {
   const root = new URL('../graphics/match-status/', import.meta.url);
   for (const variant of ['shuffling', 'siding']) {
     const html = await readFile(new URL(variant + '.html', root), 'utf8');
@@ -307,7 +360,7 @@ test('two importable entry points have fixed captions, one checkbox, correct def
       definition.DataFields.map((field) => [field.field, field.value])
     );
     assert.deepEqual(applyFields(defaults(variant), fields), defaults(variant));
-    assert.equal(definition.DataFields.filter((field) => field.ftype === 'checkbox').length, 1);
+    assert.equal(definition.DataFields.filter((field) => field.ftype === 'checkbox').length, 2);
     assert.equal(
       definition.DataFields.some((field) => /duelists|caption|animation|timing/i.test(field.title)),
       false
