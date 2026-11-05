@@ -196,13 +196,16 @@ body {
     flex: none
 }
 
+/* Matches the panel's visible inside, x=1333..1580. The artwork's yellow edge is
+   about 6px on the right and 1.5px on the divider, so the full 254px column would
+   centre the text about 2px too far right. Keeps the 236px text width. */
 #right {
     position: absolute;
-    right: 0;
+    right: 6px;
     top: 0;
     bottom: 0;
-    width: var(--right);
-    padding: 5px 9px;
+    width: 247px;
+    padding: 5px 5.5px;
     display: flex;
     flex-direction: column;
     align-items: center;
