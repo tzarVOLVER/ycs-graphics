@@ -3,6 +3,52 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { defaults, applyFields, winnerLabel } from '../graphics/winner/data.js';
+import { createWinner } from '../graphics/winner/main.js';
+
+// An output page that is not being drawn: animation frames never run.
+function undrawn(fonts) {
+  class Observer { observe() {} disconnect() {} }
+  const view = Object.assign(new EventTarget(), {
+    ResizeObserver: Observer,
+    requestAnimationFrame: () => 1,
+    cancelAnimationFrame() {},
+    matchMedia: () => ({ matches: true }),
+    setTimeout: (callback, ms) => setTimeout(callback, ms),
+    clearTimeout: id => clearTimeout(id)
+  });
+  const label = () => ({ textContent: '', style: {}, scrollWidth: 429, offsetWidth: 429, parentElement: { clientWidth: 381 } });
+  const name = label(), result = label();
+  const root = {
+    ownerDocument: { defaultView: view, fonts },
+    classList: { add() {}, remove() {} },
+    querySelector: selector => selector === '.name' ? name : selector === '.result' ? result : { animate: () => ({ cancel() {} }) }
+  };
+  return { winner: createWinner(root), name };
+}
+
+test('winner waits for its fonts before Play and fits without an animation frame', async () => {
+  let fontsArrive;
+  const fonts = Object.assign(new EventTarget(), { ready: new Promise(resolve => { fontsArrive = resolve; }) });
+  const { winner, name } = undrawn(fonts);
+  let updated = false;
+  const update = winner.update({ f1: 'STEVEN DARLING' }).then(() => { updated = true; });
+  assert.equal(name.style.transform, `scaleX(${380 / 429})`, 'measured with the wider fallback font');
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(updated, false, 'SPX keeps the frame hidden until the fonts arrive');
+  name.scrollWidth = name.offsetWidth = 218;
+  fontsArrive();
+  await update;
+  assert.equal(name.style.transform, 'scaleX(1)', 'the real font fits at full width');
+  winner.dispose();
+});
+
+test('a font that never arrives holds winner Play for about a second at most', async () => {
+  const { winner } = undrawn(Object.assign(new EventTarget(), { ready: new Promise(() => {}) }));
+  const started = Date.now();
+  await winner.update({ f1: 'STEVEN DARLING' });
+  assert.ok(Date.now() - started < 1500);
+  winner.dispose();
+});
 
 test('winner labels use the linked game number until a score of 2 takes precedence', () => {
   for (const game of [1, 2, 3]) for (const score of [0, 1, 2]) {
