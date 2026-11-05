@@ -10,7 +10,9 @@ The colored panels open outward from the center; player details rise through
 clipping frames and the caption slides down through its own frame. The round
 panel rises through a separate mask, including its optional remaining-rounds line.
 There are no opacity fades, per-player switches, appearance controls or timing fields.
-**Show rounds remaining** is the only checkbox. Clearing it hides that line and
+**Custom** shows **Custom text** in place of the current round, as on the ticker; both
+strings are kept, and Custom with blank text shows a blank label.
+Clearing **Show rounds remaining** hides that line and
 centers the current round within its existing panel. All labels shrink horizontally
 when necessary and retain their original size for shorter values.
 

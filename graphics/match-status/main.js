@@ -1,5 +1,5 @@
 import { fitHorizontal } from '../shared/fit.js';
-import { defaults, applyFields } from './data.js';
+import { defaults, applyFields, roundText } from './data.js';
 import { createMotion } from './motion.js';
 
 export function createMatchStatus(root) {
@@ -41,7 +41,8 @@ export function createMatchStatus(root) {
 
   function render() {
     for (const label of labels)
-      if (label.dataset.field) label.textContent = state[label.dataset.field];
+      if (label.dataset.field)
+        label.textContent = label.dataset.field === 'currentRound' ? roundText(state) : state[label.dataset.field];
     for (const image of images) {
       const value = state[image.dataset.image];
       image.hidden = !value;
