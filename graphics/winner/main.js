@@ -19,9 +19,23 @@ export function createWinner(root) {
     ['.name-box', { translate: '0 58px' }, { translate: '0 0px' }, 85, 365],
     ['.label-box', { translate: '0 -36px' }, { translate: '0 0px' }, 140, 310]
   ];
+  // A slow or failed font must not hold Play longer than about one second.
+  function bounded(promise, milliseconds = 1000) {
+    let timer;
+    const limit = new Promise(resolve => { timer = view.setTimeout(resolve, milliseconds); });
+    return Promise.race([promise, limit]).finally(() => view.clearTimeout(timer));
+  }
   function render() { name.textContent = state.name; result.textContent = winnerLabel(state); fit(); schedule(); }
   const api = {
-    update(input) { if (disposed) return; state = applyFields(state, input); render(); },
+    update(input) {
+      if (disposed) return;
+      state = applyFields(state, input);
+      render();
+      // SPX awaits update before showing the frame and calling Play. Fit again once the
+      // fonts arrive: labels measured with a wider fallback font would stay squeezed on
+      // a page that is not being drawn, where animation frames never run.
+      return bounded(doc.fonts?.ready).then(fit);
+    },
     play() {
       if (disposed || phase === 'shown') return;
       ++revision; cancel(); phase = 'shown'; root.classList.add('visible');
