@@ -60,6 +60,26 @@ test('player chip data preserves partial updates, accepts classic SPX fields and
   }
 });
 
+test('record shows wins and losses only, removing a draw count however it is spaced or cased', () => {
+  const shown = value => applyFields(defaults(), { f2: value }).record;
+  for (const [value, expected] of [
+    ['12 W - 2 L - 0 D', '12 W - 2 L'],
+    ['12 W - 2 L - 1 D', '12 W - 2 L'],
+    ['12 W - 2 L - 10 D', '12 W - 2 L'],
+    ['12W-2L-0D', '12W-2L'],
+    ['12w - 2l - 0d', '12w - 2l'],
+    ['12 W - 2 L - 0 D  ', '12 W - 2 L'],
+    ['12 W – 2 L – 0 D', '12 W – 2 L'],
+    ['12 W — 2 L — 1 D', '12 W — 2 L'],
+    ['12 W - 2 L - 1 Draw', '12 W - 2 L'],
+    ['12 W - 2 L - 3 DRAWS', '12 W - 2 L']
+  ]) assert.equal(shown(value), expected);
+  // Only a draw count after the losses is removed. Plain numbers are left as they arrive.
+  for (const value of ['9W - 2L', '12 W - 2 L', '12-2-0', 'TBD', 'D', '', 'TOP-8D', '-1D', '9 D', '12 W - D', '12 W - 3 D - 2 L', '12 W - 2 L - D', '12 W - 2 L - 1 D extra'])
+    assert.equal(shown(value), value);
+  assert.equal(applyFields(defaults(), { data: [{ id: 'f2', value: '3 W - 0 L - 0 D' }] }).record, '3 W - 0 L');
+});
+
 test('decktype names resolve to PNG URLs with safe encoding for spaces and punctuation', () => {
   for (const name of ['ANCIENT GEAR', '@IGNISTER MALISS', 'A+B & C#1', "KING'S DECK", '100% DECK']) {
     const state = applyFields(defaults(), { f5: name });
