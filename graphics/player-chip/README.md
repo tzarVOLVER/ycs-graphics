@@ -14,7 +14,7 @@ Images can be blank; failed images hide without a broken-image icon.
 | Field | Control |
 | --- | --- |
 | f1 | Player name |
-| f2 | Record, such as 9W - 2L |
+| f2 | Record, such as 9W - 2L. A draw count after the losses is not shown: 12 W - 2 L - 0 D reads 12 W - 2 L. Plain numbers such as 12-2-0 are shown as they arrive |
 | f3 | Flag image URL |
 | f4 | Format: Advanced or Genesys (case-insensitive) |
 | f5 | Decktype name, matching its PNG filename without .png |

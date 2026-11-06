@@ -33,6 +33,11 @@ export function imageURL(value) {
   return value;
 }
 
+// The show displays wins and losses only, so "12 W - 2 L - 1 D" reads "12 W - 2 L".
+export function recordText(value) {
+  return value.replace(/(?<=\d\s*L)\s*[-–—]\s*\d+\s*D(?:RAWS?)?\s*$/i, '');
+}
+
 export function applyFields(state, input) {
   const data = readSpxFields(input);
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError('Expected SPX fields');
@@ -41,7 +46,7 @@ export function applyFields(state, input) {
     if (!Object.hasOwn(data, field)) continue;
     const value = data[field];
     if (typeof value !== 'string' || value.length > 300) throw new TypeError(`${key} must be text of at most 300 characters`);
-    next[key] = key === 'format' ? normalizeFormat(value) : key === 'decktype' ? decktypeName(value) : key === 'flag' ? imageURL(value) : value;
+    next[key] = key === 'format' ? normalizeFormat(value) : key === 'decktype' ? decktypeName(value) : key === 'flag' ? imageURL(value) : key === 'record' ? recordText(value) : value;
   }
   return next;
 }
