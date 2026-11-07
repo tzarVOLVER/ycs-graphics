@@ -1,0 +1,49 @@
+@font-face { font-family: BugName; src: url('../ticker/assets/Anybody-Bold.otf') format('opentype'); font-weight: 700; font-display: block; }
+@font-face { font-family: BugCaption; src: url('../match-status/assets/Anybody-ExpandedExtraBold.otf') format('opentype'); font-weight: 800; font-display: block; }
+@font-face { font-family: BugScore; src: url('../match-status/assets/Apotek-Bold.otf') format('opentype'); font-weight: 700; font-display: block; }
+@font-face { font-family: BugRound; src: url('../match-status/assets/ApotekComp-Medium.otf') format('opentype'); font-weight: 500; font-display: block; }
+* { box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: transparent; }
+[hidden] { display: none !important; }
+
+/* Centred on the frame: the two bars sit either side of the middle, 10px apart. */
+#score-bug { position: absolute; left: 563px; top: 932px; width: 794px; height: 91px; visibility: hidden; pointer-events: none; }
+#score-bug.visible { visibility: visible; }
+
+.bar { position: absolute; top: 47px; width: 392px; height: 44px; }
+.bar.blue { left: 0; --side: #00a9ed; }
+.bar.red { left: 402px; --side: #f62162; }
+.shell { position: absolute; inset: 0; background: var(--side); border-radius: 7px; overflow: hidden; }
+.fill { position: absolute; top: 0; bottom: 2px; background: #212121; border-radius: 7px; }
+.blue .fill { left: 4px; right: 52px; }
+.red .fill { left: 52px; right: 4px; }
+
+.score-mask { position: absolute; top: 0; width: 52px; height: 44px; overflow: hidden; }
+.blue .score-mask { right: 0; }
+.red .score-mask { left: 0; }
+.score-motion { height: 100%; display: flex; align-items: center; justify-content: center; }
+.score { color: #fff; font: 700 41px BugScore, sans-serif; line-height: 1; }
+
+.flag-mask { position: absolute; top: 11px; width: 37px; height: 22px; overflow: hidden; }
+.blue .flag-mask { left: 290px; }
+.red .flag-mask { left: 65px; }
+.flag { display: block; width: 37px; height: 22px; object-fit: cover; }
+
+/* Names sit against the flags: right-aligned on the blue bar, left-aligned on the red bar. */
+.name-mask { position: absolute; top: 0; width: 265px; height: 42px; overflow: hidden; }
+.blue .name-mask { left: 14px; }
+.red .name-mask { left: 113px; }
+.name-motion { height: 100%; display: flex; align-items: center; }
+.blue .name-motion { justify-content: flex-end; }
+.name { position: relative; top: 1px; display: block; flex: none; width: max-content; white-space: nowrap; color: #fff; font: 700 34px BugName, sans-serif; text-transform: uppercase; }
+.blue .name { transform-origin: right center; }
+.red .name { transform-origin: left center; }
+
+.round-mask { position: absolute; left: 302px; top: 0; width: 190px; height: 43px; overflow: hidden; }
+.round-box { position: absolute; inset: 0; background: #212121; border-radius: 6px; }
+.round-room, .caption-room { position: absolute; left: 8px; width: 174px; display: flex; align-items: center; justify-content: center; }
+.round-room { top: 6px; height: 19px; }
+.caption-room { top: 28px; height: 12px; }
+.round, .caption { display: block; flex: none; width: max-content; white-space: nowrap; text-transform: uppercase; transform-origin: center; }
+.round { color: #f3ce48; font: 500 29px BugRound, sans-serif; }
+.caption { color: #fff; font: 800 14px BugCaption, sans-serif; }
