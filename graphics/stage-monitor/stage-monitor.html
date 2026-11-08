@@ -45,6 +45,7 @@
   tbody th { color:var(--dim); font-size:13px; font-weight:400; }
   tbody td { font-size:15px; }
   tbody td.name { font-size:18px; font-weight:600; }
+  tbody td.wins { font-size:24px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
   .blank { color:var(--dim); }
   .stage.stale { opacity:.55; }
   .copy { margin-top:6px; padding:2px 10px; color:var(--text); background:#30343c; border:1px solid #4a4f59; border-radius:4px; font:13px "Segoe UI", Arial, sans-serif; cursor:pointer; }
@@ -155,7 +156,7 @@
 
   function stageCard(number, fresh) {
     const entry = seen.get(number), stage = entry?.stage || {};
-    const red = stage.redDuelist || {}, blue = stage.blueDuelist || {};
+    const red = stage.redDuelist || {}, blue = stage.blueDuelist || {}, game = stage.gameState || {};
     const card = document.createElement('section');
     card.className = ['stage', fresh ? '' : 'stale', folded.has(number) ? 'collapsed' : ''].filter(Boolean).join(' ');
     card.dataset.stage = number;
@@ -192,6 +193,8 @@
     const body = document.createElement('tbody');
     body.append(
       row('Name', blue.broadcastName, red.broadcastName, 'name'),
+      // Games won in the current match, as the tournament system counts them. A missing count shows —.
+      row('Game wins', game.blueGameWins, game.redGameWins, 'wins'),
       deckRow(blue.deckType, red.deckType),
       row('Record', blue.record, red.record)
     );
