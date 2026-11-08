@@ -1,0 +1,4 @@
+{
+  "about": "Saved framing for each decktype image, by deck name (capitals and extra spaces don't matter). zoom is a percentage of the size that just fills the window (100 = fill). x and y are the point of the picture to keep in view, as percentages from the left and from the top (50, 50 = centre). Values typed in the graphic's Deck framing fields override these for that graphic.",
+  "decks": {}
+}

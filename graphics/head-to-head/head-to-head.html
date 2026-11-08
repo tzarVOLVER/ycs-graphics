@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>YCS Head to Head</title>
+    <link rel="stylesheet" href="./head-to-head.css" />
+    <script>
+      window.SPXGCTemplateDefinition = {
+        description: 'YCS Head to Head',
+        playserver: 'OVERLAY',
+        playchannel: '1',
+        playlayer: '5',
+        webplayout: '5',
+        steps: '1',
+        out: 'manual',
+        uicolor: '2',
+        dataformat: 'json',
+        ycsSlot: 'full-screen',
+        editorSections: [
+          { placement: 'header', fields: ['f15'] },
+          { title: 'Round', fields: ['f5', 'f16'] },
+          { title: 'Left player', fields: ['f4', 'f7', 'f11', 'f13'] },
+          { title: 'Right player', fields: ['f6', 'f8', 'f12', 'f14'] },
+          { title: 'Deck framing (leave blank to use the saved framing)', fields: ['f17', 'f18', 'f19', 'f20', 'f21', 'f22'] }
+        ],
+        DataFields: [
+          { field: 'f5', ftype: 'textfield', title: 'Current round', value: 'ADVANCED ROUND 9 OF 14' },
+          { field: 'f4', ftype: 'textfield', title: 'Left player', value: 'BILLY L.' },
+          { field: 'f7', ftype: 'filelist', title: 'Left flag', assetfolder: './assets/', extension: 'png', value: './assets/flag.png', ycsPrimary: true },
+          { field: 'f6', ftype: 'textfield', title: 'Right player', value: 'RONALD L.' },
+          { field: 'f8', ftype: 'filelist', title: 'Right flag', assetfolder: './assets/', extension: 'png', value: './assets/flag.png', ycsPrimary: true },
+          { field: 'f11', ftype: 'textfield', title: 'Left record', value: '7W - 1L' },
+          { field: 'f12', ftype: 'textfield', title: 'Right record', value: '7W - 1L' },
+          { field: 'f13', ftype: 'textfield', title: 'Left decktype', value: '' },
+          { field: 'f14', ftype: 'textfield', title: 'Right decktype', value: '' },
+          { field: 'f15', ftype: 'checkbox', title: 'Custom', value: '0' },
+          { field: 'f16', ftype: 'textfield', title: 'Custom text', value: '' },
+          { field: 'f17', ftype: 'textfield', title: 'Left deck zoom (%)', value: '' },
+          { field: 'f18', ftype: 'textfield', title: 'Left deck left to right (%)', value: '' },
+          { field: 'f19', ftype: 'textfield', title: 'Left deck top to bottom (%)', value: '' },
+          { field: 'f20', ftype: 'textfield', title: 'Right deck zoom (%)', value: '' },
+          { field: 'f21', ftype: 'textfield', title: 'Right deck left to right (%)', value: '' },
+          { field: 'f22', ftype: 'textfield', title: 'Right deck top to bottom (%)', value: '' }
+        ]
+      };
+    </script>
+  </head>
+  <body>
+    <div id="head-to-head" aria-label="Head to head">
+      <div class="closer">
+        <div class="band">
+          <img class="background" src="./assets/background.webp" alt="" />
+          <div class="rule rule-top"></div>
+          <div class="rule rule-bottom"></div>
+          <div class="rule rule-mid-blue"></div>
+          <div class="rule rule-mid-red"></div>
+
+          <div class="side blue">
+            <div class="deck-clip"><div class="deck-window"><div class="deck-inner"><img class="deck" data-image="leftDeck" alt="" /></div></div></div>
+            <div class="name-mask"><div class="name-motion"><span class="name" data-fit data-field="leftName"></span></div></div>
+            <div class="underline"></div>
+            <div class="info-mask">
+              <div class="info-motion">
+                <img class="flag" data-image="leftFlag" src="./assets/flag.png" alt="" />
+                <div class="record-box">
+                  <span class="label">RECORD</span>
+                  <span class="record" data-field="leftRecord"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side red">
+            <div class="deck-clip"><div class="deck-window"><div class="deck-inner"><img class="deck" data-image="rightDeck" alt="" /></div></div></div>
+            <div class="info-mask">
+              <div class="info-motion">
+                <div class="record-box">
+                  <span class="label">RECORD</span>
+                  <span class="record" data-field="rightRecord"></span>
+                </div>
+                <img class="flag" data-image="rightFlag" src="./assets/flag.png" alt="" />
+              </div>
+            </div>
+            <div class="underline"></div>
+            <div class="name-mask"><div class="name-motion"><span class="name" data-fit data-field="rightName"></span></div></div>
+          </div>
+
+          <div class="vs-mask"><span class="vs">VS</span></div>
+          <div class="round-mask"><div class="round-motion"><span class="round" data-fit data-field="roundLine"></span></div></div>
+        </div>
+
+        <div class="scroll scroll-blue"><div class="scroll-move"><div class="scroll-track" data-direction="left"></div></div></div>
+        <div class="scroll scroll-red"><div class="scroll-move"><div class="scroll-track" data-direction="right"></div></div></div>
+      </div>
+      <div class="bar bar-blue"></div>
+      <div class="bar bar-red"></div>
+    </div>
+    <div class="frame-beat start"></div>
+    <div class="frame-beat end"></div>
+    <script src="./spx.js"></script>
+  </body>
+</html>
