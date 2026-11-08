@@ -46,4 +46,4 @@ html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; backgro
 .caption-room { top: 28px; height: 12px; }
 .round, .caption { display: block; flex: none; width: max-content; white-space: nowrap; text-transform: uppercase; transform-origin: center; }
 .round { color: #f3ce48; font: 500 29px BugRound, sans-serif; }
-.caption { color: #fff; font: 800 14px BugCaption, sans-serif; }
+.caption { color: #fff; font: 800 14px BugCaption, sans-serif; text-shadow: 0 0 6px rgba(0, 0, 0, 0.85), 0 0 6px rgba(0, 0, 0, 0.85); }
