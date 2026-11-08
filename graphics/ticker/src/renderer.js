@@ -1,10 +1,16 @@
 import { TopicTiming, topicKey, crossedRightEdge, advanceOffset } from './timing.js';
 import { fitHorizontal } from './fit.js';
 import { roundText } from './data.js';
+import { gpuCompositing } from './gpu.js';
+
+// Both round to zero in an 8-bit frame (below 1/510), so these never reach the key.
+export const FRAME_BEAT_OPACITY = ['0.001', '0.0012'];
 
 export class TickerRenderer {
-  constructor(root) {
+  // options.gpu overrides the check for whether the page is drawn with GPU acceleration (for tests).
+  constructor(root, options = {}) {
     this.root = root;
+    this.gpu = options.gpu ?? gpuCompositing(root.ownerDocument);
     this.$ = id => root.querySelector(`[id="${id}"]`);
     this.track = this.$('crawl-track');
     this.viewport = this.$('crawl-viewport');
@@ -37,6 +43,8 @@ export class TickerRenderer {
       this.fitTextObserver = new MutationObserver(this.scheduleFit);
       for (const element of labels) this.fitTextObserver.observe(element, { childList: true, characterData: true, subtree: true });
     }
+    this.frameBeats = [...root.ownerDocument.querySelectorAll('.frame-beat')];
+    this.frameBeat = 0;
     this.fonts = root.ownerDocument.fonts;
     this.fonts?.addEventListener('loadingdone', this.scheduleFit);
     this.onResize = () => { this.fillTrack(); this.seedPositions(); this.fitRound(); };
@@ -167,9 +175,23 @@ export class TickerRenderer {
       const elapsed = this.lastTime === null ? 0 : time - this.lastTime;
       this.lastTime = time;
       if (!this.paused) this.advance(time, elapsed);
+      if (this.hasShown && this.gpu) this.beatFrame();
       this.frame = requestAnimationFrame(tick);
     };
     this.frame = requestAnimationFrame(tick);
+  }
+
+  // Measured in vMix's browser (Chromium 115, GPU on): while the crawl runs, frames
+  // that also change something else are mostly not delivered, so the crawl freezes and
+  // the topic fade is lost at every topic change. The likely cause is its capture
+  // pipeline treating the area that changes every frame as video. Changing two opposite
+  // corners makes the changed area the whole frame, which cleared it in those tests.
+  // It keeps running after hide() so the slide-out is covered; the output then removes
+  // this frame. With GPU acceleration off (how the stages run) the problem doesn't happen
+  // and the beat only costs processor time, so it runs only when the page has the GPU.
+  beatFrame() {
+    this.frameBeat = 1 - this.frameBeat;
+    for (const element of this.frameBeats) element.style.opacity = FRAME_BEAT_OPACITY[this.frameBeat];
   }
 
   advance(time, elapsed) {

@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TickerRenderer } from '../graphics/ticker/src/renderer.js';
+import { readFileSync } from 'node:fs';
+import { TickerRenderer, FRAME_BEAT_OPACITY } from '../graphics/ticker/src/renderer.js';
 
-function harness(run) {
+function harness(run, options = { gpu: true }) {
   const keys = ['window', 'ResizeObserver', 'MutationObserver', 'requestAnimationFrame', 'cancelAnimationFrame'];
   const previous = new Map(keys.map(key => [key, globalThis[key]]));
   const frames = new Map();
@@ -16,10 +17,11 @@ function harness(run) {
   const elements = Object.fromEntries(['crawl-track', 'crawl-viewport', 'left', 'round-box', 'date', 'location', 'status', 'round', 'remaining'].map(id => [id, { id, clientWidth: 236, scrollWidth: 294, offsetWidth: 294, style: {}, children: [] }]));
   const fonts = new EventTarget();
   const classes = new Set();
+  const beats = [{ style: {} }, { style: {} }];
   const root = {
-    ownerDocument: { fonts },
+    ownerDocument: { fonts, querySelectorAll: selector => selector === '.frame-beat' ? beats : [] },
     querySelector: selector => elements[selector.match(/id="([^"]+)"/)[1]],
-    classList: { add: name => classes.add(name), contains: name => classes.has(name) }
+    classList: { add: name => classes.add(name), remove: name => classes.delete(name), contains: name => classes.has(name) }
   };
   globalThis.window = new EventTarget();
   globalThis.ResizeObserver = globalThis.MutationObserver = Observer;
@@ -28,8 +30,8 @@ function harness(run) {
   const flush = () => { const pending = [...frames.values()]; frames.clear(); for (const callback of pending) callback(); };
   let renderer;
   try {
-    renderer = new TickerRenderer(root);
-    run({ renderer, root, elements, fonts, observers, frames, flush });
+    renderer = new TickerRenderer(root, options);
+    run({ renderer, root, elements, fonts, observers, frames, flush, beats });
   } finally {
     renderer?.dispose();
     for (const [key, value] of previous) {
@@ -56,6 +58,50 @@ test('text, font and box changes automatically refit without a data update', () 
   flush();
   assert.equal(elements.round.style.transform, 'scaleX(1)');
 }));
+
+test('both corners change on every frame once shown, including when paused or hidden', () => harness(({ renderer, flush, beats }) => {
+  renderer.start();
+  flush();
+  assert.deepEqual(beats.map(beat => beat.style.opacity), [undefined, undefined], 'nothing runs before Play');
+  renderer.show();
+  const seen = [];
+  const frame = () => { flush(); assert.equal(beats[0].style.opacity, beats[1].style.opacity); seen.push(beats[0].style.opacity); };
+  frame();
+  frame();
+  renderer.pause();
+  frame();
+  renderer.resume();
+  renderer.hide();
+  frame();
+  for (let i = 1; i < seen.length; i++) assert.notEqual(seen[i], seen[i - 1]);
+}));
+
+test('with GPU acceleration off the corners are left alone', () => harness(({ renderer, flush, beats }) => {
+  renderer.start();
+  renderer.show();
+  flush();
+  flush();
+  assert.deepEqual(beats.map(beat => beat.style.opacity), [undefined, undefined]);
+}, { gpu: false }));
+
+test('the corner elements cannot show in an 8-bit frame or be repositioned by the ticker', () => {
+  for (const opacity of FRAME_BEAT_OPACITY) assert.ok(Number(opacity) > 0 && Number(opacity) * 255 < 0.5, opacity);
+  const html = readFileSync(new URL('../graphics/ticker/ticker.html', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../graphics/ticker/ticker.css', import.meta.url), 'utf8');
+  // Fixed children of #ticker would follow its transform, so they must sit outside it.
+  assert.match(html, /<\/div>\s*<div class="frame-beat start"><\/div>\s*<div class="frame-beat end"><\/div>\s*<\/body>/);
+  const rule = css.match(/\.frame-beat \{([^}]*)\}/)[1];
+  assert.match(rule, /position: fixed/);
+  assert.match(rule, /pointer-events: none/);
+  assert.ok(Number(rule.match(/opacity: ([.\d]+)/)[1]) * 255 < 0.5);
+  // Each of these is needed for the corners to count as a change in the delivered frame.
+  assert.match(rule, /width: 1px/);
+  assert.match(rule, /height: 1px/);
+  assert.match(rule, /background: #000/);
+  assert.match(rule, /will-change: opacity/);
+  assert.match(css, /\.frame-beat\.start \{\s*left: 0;\s*top: 0\s*\}/);
+  assert.match(css, /\.frame-beat\.end \{\s*right: 0;\s*bottom: 0\s*\}/);
+});
 
 test('show retries hidden measurements and dispose releases fitting callbacks', () => harness(({ renderer, root, elements, observers, frames, flush }) => {
   elements['round-box'].clientWidth = 0;
