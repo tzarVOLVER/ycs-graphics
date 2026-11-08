@@ -13,9 +13,10 @@ export function formatLogo(format) {
   return ({ advanced: './assets/ycs-logo.png', genesys: './assets/genesys.png' })[format] || '';
 }
 
+// A final period is fine: ".png" is always added, so "R.B." finds "R.B..png".
 export function decktypeName(value) {
   const name = value.trim();
-  if (/[<>:"/\\|?*\u0000-\u001f\u007f]/.test(name) || name.startsWith('.') || /[. ]$/.test(name))
+  if (/[<>:"/\\|?*\u0000-\u001f\u007f]/.test(name) || name.startsWith('.'))
     throw new TypeError('Decktype must be a name, not a file path or URL');
   if (name.length > 240) throw new TypeError('Decktype name is too long');
   return name;
@@ -23,6 +24,15 @@ export function decktypeName(value) {
 
 export function decktypeURL(name) {
   return name ? '/decktypes/' + encodeURIComponent(name + '.png') : '';
+}
+
+// The addresses to try, in order: the exact name, then with every non-breaking space as a normal space,
+// then with every normal space as a non-breaking one. Some files have both kinds of space in one name;
+// those are found only by the exact name.
+export function decktypeURLs(name) {
+  if (!name) return [];
+  const names = [name, name.replace(/ /g, ' '), name.replace(/ /g, ' ')];
+  return [...new Set(names)].map(decktypeURL);
 }
 
 export function imageURL(value) {

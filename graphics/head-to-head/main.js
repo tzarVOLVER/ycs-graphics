@@ -1,6 +1,7 @@
 import { fitHorizontal } from '../shared/fit.js';
 import { gpuCompositing } from '../shared/gpu.js';
-import { applyFields, deckFraming, decktypeURL, defaults, recordLine, roundLine } from './data.js';
+import { imageSources } from '../shared/image-sources.js';
+import { applyFields, deckFraming, decktypeURLs, defaults, recordLine, roundLine } from './data.js';
 import { createMotion } from './motion.js';
 
 // A curly apostrophe: the Owners Narrow file has no straight one.
@@ -45,6 +46,10 @@ export function createHeadToHead(root) {
     image.addEventListener('error', () => { image.hidden = true; });
     image.addEventListener('load', () => { image.hidden = !image.getAttribute('src'); });
   }
+  // Decktypes try each spelling of the name in turn (see shared/image-sources.js).
+  const deckNames = { leftDeck: 'leftDecktype', rightDeck: 'rightDecktype' };
+  const deckSources = new Map(images.filter((image) => deckNames[image.dataset.image])
+    .map((image) => [image, imageSources(image, { retryBroken: true })]));
   // A slow font, image or framing file must not hold Play longer than about one second.
   function bounded(promise, milliseconds = 1000) {
     let timer;
@@ -58,11 +63,6 @@ export function createHeadToHead(root) {
       if (response.ok) framingLibrary = await response.json();
     } catch { /* keep the last framing that loaded */ }
   }
-  const imageValue = (key) => {
-    if (key === 'leftDeck') return decktypeURL(state.leftDecktype);
-    if (key === 'rightDeck') return decktypeURL(state.rightDecktype);
-    return state[key];
-  };
   function applyFraming() {
     for (const [side, name, override] of [['.blue', state.leftDecktype, state.leftFraming], ['.red', state.rightDecktype, state.rightFraming]]) {
       const framing = deckFraming(framingLibrary, name, override);
@@ -78,7 +78,15 @@ export function createHeadToHead(root) {
       label.textContent = key === 'roundLine' ? roundLine(state) : key.endsWith('Record') ? recordLine(state[key]) : state[key];
     }
     for (const image of images) {
-      const value = imageValue(image.dataset.image);
+      const sources = deckSources.get(image);
+      if (sources) {
+        // Hidden until it loads, so a slow image never shows the previous player's.
+        const urls = decktypeURLs(state[deckNames[image.dataset.image]]);
+        if (sources.set(urls)) image.hidden = true;
+        else if (image.complete) image.hidden = !urls.length || image.naturalWidth === 0;
+        continue;
+      }
+      const value = state[image.dataset.image];
       if (image.getAttribute('src') === value && !(image.complete && image.naturalWidth === 0)) {
         if (image.complete) image.hidden = !value;
         continue;
@@ -99,8 +107,12 @@ export function createHeadToHead(root) {
       render();
       // SPX awaits this before showing the frame and calling Play.
       // The background is decoded here too, so the band doesn't stall the first time it opens onto it.
-      const pictures = [...images.filter((image) => image.getAttribute('src')), root.querySelector('.background')]
-        .map((image) => image.decode().catch(() => {}));
+      // A decktype waits for its other spellings to be tried before it decodes.
+      const decode = (image) => image.getAttribute('src') ? image.decode().catch(() => {}) : undefined;
+      const pictures = [...images, root.querySelector('.background')].map((image) => {
+        const sources = deckSources.get(image);
+        return sources ? sources.ready().then((current) => current && decode(image)) : decode(image);
+      });
       return bounded(Promise.all([doc.fonts?.ready, loadFraming().then(applyFraming), ...pictures])).then(() => { fillTracks(); fit(); });
     },
     play() { if (!disposed) { fillTracks(); motion.play(); schedule(); } },

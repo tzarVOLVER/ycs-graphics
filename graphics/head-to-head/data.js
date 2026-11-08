@@ -1,5 +1,5 @@
 import { booleanValue, readSpxFields } from '../shared/data-contract.js';
-import { decktypeName, decktypeURL, imageURL, recordText } from '../player-chip/data.js';
+import { decktypeName, decktypeURLs, imageURL, recordText } from '../player-chip/data.js';
 
 export const defaults = () => ({
   leftName: 'BILLY L.',
@@ -32,9 +32,9 @@ const framingLimits = { zoom: [100, 400], x: [0, 100], y: [0, 100] };
 // A full-screen graphic must still play when one value is odd, so a decktype or flag that can't be used
 // is shown blank instead of stopping the update (the chips are stricter).
 export function deckName(value) {
-  // Non-breaking spaces count as spaces; Windows drops trailing dots and spaces from file names.
-  const name = value.replace(/ /g, ' ').trim().replace(/[. ]+$/, '');
-  try { return decktypeName(name); } catch { return ''; }
+  // The name is kept exactly as it arrives, non-breaking spaces and a final period included: some files
+  // are named that way. main.js also tries the spellings with the other kind of space.
+  try { return decktypeName(value); } catch { return ''; }
 }
 export function flagURL(value) {
   if (value === 'none') return '';
@@ -105,4 +105,4 @@ export function deckFraming(library, name, override = {}) {
   return { zoom: framing.zoom / 100, x: framing.x + '%', y: framing.y + '%' };
 }
 
-export { decktypeURL };
+export { decktypeURLs };

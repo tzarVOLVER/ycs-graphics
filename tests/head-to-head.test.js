@@ -58,9 +58,9 @@ test('records drop draws and close the spaces round the dash', () => {
 test('an odd decktype or flag shows blank instead of stopping the graphic', () => {
   const apply = (data) => applyFields(defaults(), fields(data));
   assert.equal(apply({ f13: 'BLUE-EYES BRANDED' }).leftDecktype, 'BLUE-EYES BRANDED');
-  // Windows drops trailing dots from file names, and a non-breaking space counts as a space.
-  assert.equal(apply({ f13: 'R.B.' }).leftDecktype, 'R.B');
-  assert.equal(apply({ f13: 'R.B.\u00a0CYBER DRAGON' }).leftDecktype, 'R.B. CYBER DRAGON');
+  // Kept exactly, so "R.B." finds R.B..png and non-breaking spaces match files named with them.
+  assert.equal(apply({ f13: 'R.B.' }).leftDecktype, 'R.B.');
+  assert.equal(apply({ f13: '  Power Patron\u00a0Ars Magna\u00a0Artmage ' }).leftDecktype, 'Power Patron\u00a0Ars Magna\u00a0Artmage');
   assert.equal(apply({ f14: 'Snake-Eye/Fire King' }).rightDecktype, '');
   assert.equal(apply({ f14: 'Branded: Despia' }).rightDecktype, '');
   assert.equal(apply({ f14: '../secret' }).rightDecktype, '');
