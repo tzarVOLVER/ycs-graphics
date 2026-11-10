@@ -25,7 +25,11 @@ export function createWinner(root) {
     const limit = new Promise(resolve => { timer = view.setTimeout(resolve, milliseconds); });
     return Promise.race([promise, limit]).finally(() => view.clearTimeout(timer));
   }
-  function render() { name.textContent = state.name; result.textContent = winnerLabel(state); fit(); schedule(); }
+  function render() {
+    name.textContent = state.name; result.textContent = winnerLabel(state);
+    root.classList.toggle('champion', state.champion);
+    fit(); schedule();
+  }
   const api = {
     update(input) {
       if (disposed) return;

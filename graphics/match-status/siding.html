@@ -200,5 +200,25 @@
       </div>
     </div>
     <script src="./spx.js"></script>
+    <script>
+      // The caption reads MATCH COMPLETE once either player's score is 2.
+      (function () {
+        var left = document.querySelector('[data-field="leftScore"]');
+        var right = document.querySelector('[data-field="rightScore"]');
+        var caption = document.querySelector('.caption-box .fit-text');
+        function applyCaption() {
+          var text =
+            left.textContent === '2' || right.textContent === '2'
+              ? 'MATCH COMPLETE'
+              : 'DUELISTS SIDING';
+          if (caption.textContent !== text) caption.textContent = text;
+        }
+        var watch = new MutationObserver(applyCaption);
+        var options = { childList: true, characterData: true, subtree: true };
+        watch.observe(left, options);
+        watch.observe(right, options);
+        applyCaption();
+      })();
+    </script>
   </body>
 </html>

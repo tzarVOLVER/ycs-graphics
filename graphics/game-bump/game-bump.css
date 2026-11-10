@@ -1,0 +1,54 @@
+/* Shares the head-to-head's fonts and background (see ../head-to-head/assets). */
+@font-face { font-family: H2HScrollOwners; src: url('../head-to-head/assets/OwnersNarrow-BlackItalic.otf') format('opentype'); font-weight: 900; font-style: italic; font-display: block; }
+@font-face { font-family: H2HScroll; src: url('../head-to-head/assets/Anybody-CondensedBlackItalic.otf') format('opentype'); font-weight: 900; font-style: italic; font-display: block; }
+@font-face { font-family: H2HRound; src: url('../head-to-head/assets/Anybody-ExpandedBlack.otf') format('opentype'); font-weight: 900; font-display: block; }
+
+* { box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: transparent; }
+
+.frame-beat { position: fixed; width: 1px; height: 1px; background: #000; opacity: 0.001; will-change: opacity; pointer-events: none; }
+.frame-beat.start { left: 0; top: 0; }
+.frame-beat.end { right: 0; bottom: 0; }
+
+#game-bump { --blue: #00a9ed; --red: #f62162; position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+#game-bump.visible { visibility: visible; }
+.closer, .band { position: absolute; inset: 0; }
+.background { position: absolute; inset: 0; width: 1920px; height: 1080px; display: block; }
+
+/* The bars ride the edges of the band as it opens sideways from the middle, and leave the frame. */
+.bar { position: absolute; top: 0; width: 48px; height: 1080px; }
+.bar-blue { left: 0; background: var(--blue); }
+.bar-red { left: 1872px; background: var(--red); }
+
+/* "IT'S TIME TO DUEL!" outlines, turned on their sides with the tops of the letters facing the middle of
+   the frame: blue reads downwards on the left edge, red reads upwards on the right edge. Each is a
+   1080 x 156 strip turned about its centre. */
+/* Each outline has its own mask, split at the centre line: blue shows only on the left half, red only on
+   the right. They start hidden just past the middle and slide out to reveal themselves. */
+.scroll-mask { position: absolute; top: 0; width: 960px; height: 1080px; overflow: hidden; }
+.scroll-mask-blue { left: 0; }
+.scroll-mask-red { left: 960px; }
+.scroll { position: absolute; top: 462px; width: 1080px; height: 156px; overflow: hidden; }
+.scroll-blue { left: -485px; rotate: 90deg; --line: var(--blue); }
+.scroll-red { left: 365px; rotate: -90deg; --line: var(--red); } /* 1325px across the frame */
+.scroll-track { position: absolute; left: 0; top: 0; display: flex; white-space: nowrap; will-change: transform; }
+.scroll-track span {
+  display: block; flex: none; padding-right: 0.32em;
+  font: italic 900 185px/156px H2HScrollOwners, H2HScroll, sans-serif; letter-spacing: 0.01em; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.75px var(--line);
+  position: relative;
+}
+.scroll-track span::before, .scroll-track span::after {
+  content: attr(data-text); position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none;
+}
+.scroll-track span::before { -webkit-text-stroke: 9px rgba(0, 0, 0, 0.22); }
+.scroll-track span::after { -webkit-text-stroke: 5px rgba(0, 0, 0, 0.38); }
+
+/* The game number drops in from above its mask, as in the CharacterWorks build. */
+.game-mask { position: absolute; left: 0; top: 440px; width: 1920px; height: 220px; overflow: hidden; }
+.game-motion { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; translate: 0 -220px; }
+.game {
+  display: block; flex: none; width: max-content; white-space: nowrap; color: #fff; text-transform: uppercase;
+  font: 900 198px/220px H2HRound, sans-serif; letter-spacing: -0.009em; margin-right: 0.009em;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}

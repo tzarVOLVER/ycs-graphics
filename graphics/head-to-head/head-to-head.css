@@ -1,0 +1,118 @@
+/* Anybody stands in for the original's Loos fonts. The scroll uses Owners Narrow Black Italic, falling back to
+   Anybody Condensed Black Italic if that file is removed (the copy in assets is a personal-use trial). */
+@font-face { font-family: H2HScrollOwners; src: url('./assets/OwnersNarrow-BlackItalic.otf') format('opentype'); font-weight: 900; font-style: italic; font-display: block; }
+@font-face { font-family: H2HName; src: url('./assets/Anybody-ExpandedBold.otf') format('opentype'); font-weight: 700; font-display: block; }
+@font-face { font-family: H2HRound; src: url('./assets/Anybody-ExpandedBlack.otf') format('opentype'); font-weight: 900; font-display: block; }
+@font-face { font-family: H2HVs; src: url('./assets/Anybody-ExtraExpandedBlack.otf') format('opentype'); font-weight: 900; font-display: block; }
+@font-face { font-family: H2HLabel; src: url('./assets/Anybody-ExpandedRegular.otf') format('opentype'); font-weight: 400; font-display: block; }
+@font-face { font-family: H2HRecord; src: url('./assets/Anybody-Bold.otf') format('opentype'); font-weight: 700; font-display: block; }
+@font-face { font-family: H2HScroll; src: url('./assets/Anybody-CondensedBlackItalic.otf') format('opentype'); font-weight: 900; font-style: italic; font-display: block; }
+
+* { box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: transparent; }
+[hidden] { display: none !important; }
+
+/* See FRAME_BEAT_OPACITY in motion.js: only changed when the page has the GPU. Too faint to survive in an 8-bit frame. */
+.frame-beat { position: fixed; width: 1px; height: 1px; background: #000; opacity: 0.001; will-change: opacity; pointer-events: none; }
+.frame-beat.start { left: 0; top: 0; }
+.frame-beat.end { right: 0; bottom: 0; }
+
+#head-to-head { --blue: #00a9ed; --red: #f62162; position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+#head-to-head.visible { visibility: visible; }
+.closer, .band { position: absolute; inset: 0; }
+.background { position: absolute; inset: 0; width: 1920px; height: 1080px; display: block; }
+
+/* The bars ride the edges of the band as it opens from the middle and closes back to it. */
+.bar { position: absolute; left: 0; width: 1920px; height: 16px; }
+.bar-blue { top: 0; background: var(--blue); }
+.bar-red { top: 1064px; background: var(--red); }
+
+.rule { position: absolute; left: 0; width: 1920px; height: 2px; }
+.rule-top { top: 263px; background: rgba(0, 169, 237, 0.32); }
+.rule-mid-blue { top: 497px; background: rgba(0, 169, 237, 0.42); }
+.rule-mid-red { top: 552px; background: rgba(246, 33, 98, 0.32); }
+.rule-bottom { top: 787px; background: rgba(246, 33, 98, 0.24); }
+
+/* "IT'S TIME TO DUEL!" outlines: the blue line runs left, the red line runs right. */
+.scroll { position: absolute; left: 0; width: 1920px; height: 156px; overflow: hidden; }
+.scroll-blue { top: 117px; }
+.scroll-red { top: 791px; }
+.scroll-move { position: absolute; inset: 0; }
+.scroll-track { position: absolute; left: 0; top: 0; display: flex; white-space: nowrap; will-change: transform; }
+.scroll-track span {
+  display: block; flex: none; padding-right: 0.32em;
+  font: italic 900 185px/156px H2HScrollOwners, H2HScroll, sans-serif; letter-spacing: 0.01em; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.75px var(--line);
+  position: relative;
+}
+/* A slight black glow round the outline: two wider, faint black outlines drawn behind the coloured one.
+   They're drawn once and slide with the text; a blur filter cost about 6fps in the out with vMix's GPU
+   acceleration off. */
+.scroll-track span::before, .scroll-track span::after {
+  content: attr(data-text); position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none;
+}
+.scroll-track span::before { -webkit-text-stroke: 9px rgba(0, 0, 0, 0.22); }
+.scroll-track span::after { -webkit-text-stroke: 5px rgba(0, 0, 0, 0.38); }
+.scroll-blue { --line: var(--blue); }
+.scroll-red { --line: var(--red); }
+
+/* Players: blue sits top left with the deck to its right; red mirrors it bottom right. */
+.side { position: absolute; inset: 0; }
+/* The clip stays still; the window (with its coloured edge) slides inside it, so the edge enters
+   and leaves through the clip instead of being left behind. */
+.deck-clip { position: absolute; top: 268px; width: 642px; height: 226px; overflow: hidden; }
+.blue .deck-clip { left: 955px; }
+.red .deck-clip { left: 323px; top: 558px; }
+.deck-window { position: absolute; inset: 0; overflow: hidden; }
+.blue .deck-window { border-radius: 0 10px 10px 0; border-right: 10px solid var(--blue); }
+.red .deck-window { border-radius: 10px 0 0 10px; border-left: 10px solid var(--red); }
+/* Wipes move the window one way and its contents back the other, so the art stays put and nothing
+   is repainted while it moves (cheaper with vMix's GPU acceleration off). */
+.deck-inner { position: absolute; inset: 0; }
+.deck {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  object-fit: cover; object-position: var(--deck-x, 50%) var(--deck-y, 50%);
+  transform: scale(var(--deck-zoom, 1)); transform-origin: var(--deck-x, 50%) var(--deck-y, 50%);
+}
+/* The fade sits on the unscaled holder, so zooming the art never moves it. */
+.blue .deck-inner { -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.35) 14%, #000 42%); mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.35) 14%, #000 42%); }
+.red .deck-inner { -webkit-mask-image: linear-gradient(270deg, transparent 0, rgba(0, 0, 0, 0.35) 14%, #000 42%); mask-image: linear-gradient(270deg, transparent 0, rgba(0, 0, 0, 0.35) 14%, #000 42%); }
+
+.name-mask { position: absolute; height: 68px; overflow: hidden; }
+.blue .name-mask { left: 322px; top: 330px; width: 610px; }
+.red .name-mask { right: 323px; top: 673px; width: 610px; }
+.name-motion { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.red .name-motion { justify-content: flex-end; }
+.name { display: block; flex: none; width: max-content; white-space: nowrap; color: #fff; font: 700 69px/68px H2HName, sans-serif; text-transform: uppercase; }
+.blue .name { transform-origin: left center; }
+.red .name { transform-origin: right center; }
+
+.underline { position: absolute; height: 2px; width: 590px; }
+.blue .underline { left: 326px; top: 393px; background: linear-gradient(90deg, var(--blue) 0, var(--blue) 55%, rgba(0, 169, 237, 0) 100%); transform-origin: left center; }
+.red .underline { right: 323px; top: 669px; background: linear-gradient(270deg, var(--red) 0, var(--red) 55%, rgba(246, 33, 98, 0) 100%); transform-origin: right center; }
+
+.info-mask { position: absolute; height: 50px; width: 420px; overflow: hidden; }
+.blue .info-mask { left: 322px; top: 402px; }
+.red .info-mask { right: 323px; top: 614px; }
+.info-motion { position: absolute; inset: 0; display: flex; align-items: center; gap: 9px; }
+.blue .info-motion { padding-left: 2px; }
+.red .info-motion { justify-content: flex-end; gap: 18px; }
+.flag { display: block; flex: none; width: 70px; height: 42px; object-fit: cover; }
+/* A loading or missing flag keeps its space, so the record beside it doesn't jump. */
+.flag[hidden] { display: block !important; visibility: hidden; }
+.record-box { position: relative; display: flex; flex-direction: column; justify-content: center; }
+.blue .record-box { top: 2px; }
+.red .record-box { align-items: flex-end; }
+.red .record { margin-top: 2px; }
+.label { display: block; color: #a7a9ab; font: 400 20px/19px H2HLabel, sans-serif; }
+.record { display: block; color: #fff; font: 700 34px/28px H2HRecord, sans-serif; letter-spacing: 0.2em; white-space: nowrap; text-transform: uppercase; }
+.blue .record { margin-left: -1px; }
+.red .record { margin-right: -0.2em; }
+
+.vs-mask { position: absolute; left: 860px; top: 505px; width: 200px; height: 46px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+.vs { display: block; color: #3f4243; font: 900 50px/46px H2HVs, sans-serif; -webkit-text-stroke: 1px #575a5b; }
+
+.round-mask { position: absolute; left: 160px; top: 493px; width: 1600px; height: 100px; overflow: hidden; }
+/* Below its mask until Stop raises it. */
+.round-motion { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; translate: 0 100px; }
+.round { display: block; flex: none; width: max-content; white-space: nowrap; color: #fff; font: 900 95px/100px H2HRound, sans-serif; text-transform: uppercase; transform-origin: center; }

@@ -1,5 +1,6 @@
-import { defaults, applyFields, chipWidth, formatLogo, decktypeURL } from './data.js';
+import { defaults, applyFields, chipWidth, formatLogo, decktypeURLs } from './data.js';
 import { fitHorizontal } from '../shared/fit.js';
+import { imageSources } from '../shared/image-sources.js';
 import { createMotion } from './motion.js';
 
 export function createPlayerChip(root) {
@@ -24,11 +25,18 @@ export function createPlayerChip(root) {
   const images = ['flag', 'logo', 'decktype'].map(key => [key, root.querySelector(`[data-image="${key}"]`)]);
   for (const [, image] of images) image.addEventListener('error', () => { image.hidden = true; });
   for (const [, image] of images) image.addEventListener('load', () => { image.hidden = !image.getAttribute('src'); });
+  // The decktype tries each spelling of the name in turn (see shared/image-sources.js).
+  const decktype = images.find(([key]) => key === 'decktype')[1], deckSources = imageSources(decktype);
   function render() {
     name.textContent = state.name; record.textContent = state.record;
     root.dataset.format = state.format;
     for (const [key, image] of images) {
-      const value = key === 'logo' ? formatLogo(state.format) : key === 'decktype' ? decktypeURL(state.decktype) : state[key];
+      if (key === 'decktype') {
+        const urls = decktypeURLs(state.decktype);
+        if (deckSources.set(urls)) image.hidden = !urls.length;
+        continue;
+      }
+      const value = key === 'logo' ? formatLogo(state.format) : state[key];
       if (image.getAttribute('src') === value) continue;
       image.hidden = !value;
       if (value) image.setAttribute('src', value); else image.removeAttribute('src');
@@ -36,7 +44,9 @@ export function createPlayerChip(root) {
     fit(); schedule();
     // Decode while the output still hides this frame, so the first on-air frame
     // does not decode multi-megapixel artwork and stall the shared output page.
-    return Promise.all(images.filter(([, image]) => image.getAttribute('src')).map(([, image]) => image.decode().catch(() => {})));
+    // The decktype first waits for its other spellings to be tried.
+    const decode = (image) => image.getAttribute('src') ? image.decode().catch(() => {}) : undefined;
+    return Promise.all(images.map(([, image]) => image === decktype ? deckSources.ready().then((current) => current && decode(image)) : decode(image)));
   }
   // A slow remote flag must not hold Play longer than about one second.
   function bounded(promise, milliseconds = 1000) {

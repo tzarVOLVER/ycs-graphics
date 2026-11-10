@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { defaults, applyFields, chipWidth, formatLogo, decktypeURL } from '../graphics/player-chip/data.js';
+import { defaults, applyFields, chipWidth, formatLogo, decktypeURL, decktypeURLs } from '../graphics/player-chip/data.js';
 import { createPlayerChip } from '../graphics/player-chip/main.js';
 
 function chipHarness() {
@@ -15,8 +15,9 @@ function chipHarness() {
   const image = src => {
     const attributes = src ? { src } : {};
     const element = Object.assign(new EventTarget(), {
-      hidden: false, decoded: [], pending: [], sets: 0,
+      hidden: false, decoded: [], pending: [], sets: 0, complete: false, naturalWidth: 0,
       getAttribute: key => attributes[key] ?? null,
+      hasAttribute: key => Object.hasOwn(attributes, key),
       setAttribute(key, value) { this.sets++; attributes[key] = value; },
       removeAttribute: key => { delete attributes[key]; },
       decode() { element.decoded.push(attributes.src); return new Promise((resolve, reject) => element.pending.push({ resolve, reject })); }
@@ -87,7 +88,19 @@ test('decktype names resolve to PNG URLs with safe encoding for spaces and punct
   }
   assert.equal(decktypeURL(applyFields(defaults(), { f5: '  ANCIENT GEAR  ' }).decktype), '/decktypes/ANCIENT%20GEAR.png');
   assert.equal(decktypeURL(''), '');
-  for (const value of ['../secret', 'folder/deck', 'http://host/card.png', '.hidden', 'DECK.', 'DECK?']) assert.throws(() => applyFields(defaults(), { f5: value }));
+  for (const value of ['../secret', 'folder/deck', 'http://host/card.png', '.hidden', '..', 'DECK?']) assert.throws(() => applyFields(defaults(), { f5: value }));
+  // A final period is part of the name: the file is R.B..png.
+  for (const value of ['R.B.', 'Psychic Gold Pride P.U.N.K.']) assert.equal(applyFields(defaults(), { f5: value }).decktype, value);
+  assert.equal(decktypeURL('R.B.'), '/decktypes/R.B..png');
+});
+
+test('decktype spellings: exact name first, then with normal spaces, then with non-breaking spaces', () => {
+  const nb = ' ', url = (name) => '/decktypes/' + encodeURIComponent(name + '.png');
+  assert.deepEqual(decktypeURLs(''), []);
+  assert.deepEqual(decktypeURLs('R.B.'), [url('R.B.')]);
+  assert.deepEqual(decktypeURLs('ANCIENT GEAR'), [url('ANCIENT GEAR'), url('ANCIENT' + nb + 'GEAR')]);
+  assert.deepEqual(decktypeURLs('Power Patron' + nb + 'Ars Magna' + nb + 'Artmage'),
+    [url('Power Patron' + nb + 'Ars Magna' + nb + 'Artmage'), url('Power Patron Ars Magna Artmage'), url('Power' + nb + 'Patron' + nb + 'Ars' + nb + 'Magna' + nb + 'Artmage')]);
 });
 
 test('chip width keeps a 410px minimum, expands with a 38px end margin and caps only at the screen edge', () => {
@@ -117,15 +130,22 @@ test('Update resolves only after every shown chip image is decoded, so Play neve
   const r = chipHarness();
   t.after(() => r.api.dispose());
   const [flag, logo, decktype] = r.images;
-  const update = r.api.update({ f4: 'Advanced', f5: 'SNAKE-EYE' });
-  assert.deepEqual([flag.decoded, logo.decoded, decktype.decoded], [['./assets/flag.png'], ['./assets/ycs-logo.png'], ['/decktypes/SNAKE-EYE.png']]);
+  const update = r.api.update({ f4: 'Advanced', f5: 'SNAKE EYE' });
+  assert.deepEqual([flag.decoded, logo.decoded, decktype.decoded], [['./assets/flag.png'], ['./assets/ycs-logo.png'], []]);
+  // The exact name is missing, so the chip tries the non-breaking-space spelling and decodes that one.
+  decktype.dispatchEvent(new Event('error'));
+  assert.equal(decktype.getAttribute('src'), '/decktypes/SNAKE%C2%A0EYE.png');
+  decktype.dispatchEvent(new Event('load'));
+  await new Promise(setImmediate);
+  assert.deepEqual(decktype.decoded, ['/decktypes/SNAKE%C2%A0EYE.png']);
+  assert.equal(decktype.hidden, false);
   assert.equal(await settled(update), false);
   flag.pending[0].resolve(); logo.pending[0].reject(new Error('EncodingError'));
   assert.equal(await settled(update), false, 'still waiting for the decktype');
   decktype.pending[0].resolve();
   assert.equal(await settled(update), true, 'a failed image decode is not an update error');
   r.api.update({ f5: '' });
-  assert.deepEqual(decktype.decoded, ['/decktypes/SNAKE-EYE.png'], 'images without a src are not decoded');
+  assert.deepEqual(decktype.decoded, ['/decktypes/SNAKE%C2%A0EYE.png'], 'images without a src are not decoded');
 });
 
 test('A slow chip image holds Update for at most about one second', async t => {

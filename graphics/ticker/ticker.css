@@ -56,6 +56,27 @@ body {
     transform: translateY(0)
 }
 
+/* See beatFrame() in src/renderer.js. Too faint to survive in an 8-bit frame. */
+.frame-beat {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    background: #000;
+    opacity: .001;
+    will-change: opacity;
+    pointer-events: none
+}
+
+.frame-beat.start {
+    left: 0;
+    top: 0
+}
+
+.frame-beat.end {
+    right: 0;
+    bottom: 0
+}
+
 #bg {
     position: absolute;
     inset: 0;

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage Monitor</title>
+<!-- Served by SPX for anyone on the network:
+     http://192.168.1.91:5660/templates/ycs/stage-monitor/stage-monitor.html
+     It only reads the stage report; it never sends anything to SPX or the report. -->
+<style>
+  :root { --bg:#14161a; --panel:#1e2127; --line:#30343c; --text:#f2f3f5; --dim:#9aa1ad; --red:#f62162; --blue:#00a9ed; --bad:#ffb020; }
+  * { box-sizing:border-box; }
+  html { background:var(--bg); }
+  body { margin:0; padding:16px; color:var(--text); font:16px/1.3 "Segoe UI", Arial, sans-serif; }
+  header { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; margin-bottom:16px; }
+  h1 { margin:0; font-size:20px; font-weight:600; }
+  #status { color:var(--dim); font-variant-numeric:tabular-nums; }
+  #status.bad { color:#14161a; background:var(--bad); padding:4px 10px; border-radius:4px; font-weight:600; }
+  /* Stages sit left to right in order. A folded stage shrinks to its title bar and the open ones share
+     the rest of the width, so folding one never leaves a gap or pushes the next stage onto a new row. */
+  #stages { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  .stage { flex:1 1 330px; min-width:0; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .stage.collapsed { flex:0 0 auto; }
+  .stage.collapsed .toggle { white-space:nowrap; }
+  .stage h2 { margin:0; font-size:18px; font-weight:600; }
+  /* The whole title bar folds and unfolds its stage. */
+  .toggle { display:flex; align-items:baseline; gap:10px; width:100%; padding:10px 14px; color:inherit; background:none; border:0; text-align:left; font:inherit; cursor:pointer; }
+  .toggle:hover { background:#252931; }
+  .toggle:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
+  .arrow { flex:none; width:12px; color:var(--dim); font-size:12px; transition:transform .12s; }
+  .stage.collapsed .arrow { transform:rotate(-90deg); }
+  .title { flex:none; }
+  .event { min-width:0; color:var(--dim); font-size:15px; font-weight:400; overflow-wrap:anywhere; }
+  .details { border-top:1px solid var(--line); }
+  .stage.collapsed .details { display:none; }
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  /* Long names and decks wrap between words; a single word only breaks if it can't fit at all. */
+  th, td { padding:9px 10px; text-align:left; vertical-align:top; overflow-wrap:break-word; border-bottom:1px solid var(--line); }
+  tr > :first-child { padding-left:14px; }
+  tr:last-child th, tr:last-child td { border-bottom:0; }
+  thead th { font-size:14px; font-weight:700; letter-spacing:.04em; }
+  thead th:first-child { width:74px; }
+  th.red { color:var(--red); }
+  th.blue { color:var(--blue); }
+  tbody th { color:var(--dim); font-size:13px; font-weight:400; }
+  tbody td { font-size:15px; }
+  tbody td.name { font-size:18px; font-weight:600; }
+  tbody td.wins { font-size:24px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+  .blank { color:var(--dim); }
+  .stage.stale { opacity:.55; }
+  .copy { margin-top:6px; padding:2px 10px; color:var(--text); background:#30343c; border:1px solid #4a4f59; border-radius:4px; font:13px "Segoe UI", Arial, sans-serif; cursor:pointer; }
+  .copy:hover { background:#3b404a; }
+  /* On a phone every stage, folded or not, takes the full width, one under another. */
+  @media (max-width:480px) { .stage, .stage.collapsed { flex:1 1 100%; } .stage.collapsed .toggle { white-space:normal; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Stage Monitor</h1>
+  <span id="status" role="status">Connecting…</span>
+</header>
+<main id="stages"></main>
+
+<script>
+  const REPORT_URL = 'http://192.168.1.55:8080/api/stages';
+  const EVERY_MS = 3000;
+  const GIVE_UP_MS = 5000;
+  const FOLDED_KEY = 'ycs.stageMonitor.folded';
+
+  const statusLine = document.getElementById('status');
+  const stagesBox = document.getElementById('stages');
+  const STAGE_NUMBERS = [1, 2, 3];
+  const seen = new Map();
+  let lastDrawn = '';
+  let lastFresh = new Set();
+
+  // Which stages are folded is remembered by each computer's browser, so it survives a refresh.
+  const folded = new Set();
+  try {
+    for (const number of JSON.parse(localStorage.getItem(FOLDED_KEY) || '[]'))
+      if (STAGE_NUMBERS.includes(number)) folded.add(number);
+  } catch { /* a damaged or blocked saved setting just means nothing starts folded */ }
+  function toggleFold(number) {
+    if (folded.has(number)) folded.delete(number); else folded.add(number);
+    try { localStorage.setItem(FOLDED_KEY, JSON.stringify([...folded])); } catch { /* still folds, just not remembered */ }
+    render(lastFresh);
+    // Keep the keyboard on the same title bar after the redraw.
+    stagesBox.querySelector(`[data-stage="${number}"] .toggle`)?.focus();
+  }
+
+  function clock(date) { return date.toLocaleTimeString(); }
+
+  function cell(tag, value, className) {
+    const element = document.createElement(tag);
+    const missing = value === null || value === undefined || value === '';
+    // textContent keeps anything odd in the report from being treated as page code.
+    element.textContent = missing ? '—' : String(value);
+    element.className = [className, missing ? 'blank' : ''].filter(Boolean).join(' ');
+    return element;
+  }
+
+  // Blue on the left, red on the right, as on the graphics.
+  function row(label, blue, red, className) {
+    const line = document.createElement('tr');
+    line.append(cell('th', label), cell('td', blue, className), cell('td', red, className));
+    return line;
+  }
+
+  // Copies the report's exact characters. Selecting the text by hand can change non-breaking spaces into
+  // normal ones, and then the image filename won't match. Browsers only offer the modern clipboard on
+  // https or this computer's own address, so over the network the copy is made through a copy event,
+  // which also hands over the exact text.
+  async function copyText(text) {
+    if (window.isSecureContext && navigator.clipboard?.writeText) {
+      try { await navigator.clipboard.writeText(text); return true; } catch { /* fall back below */ }
+    }
+    let done = false;
+    const handler = (event) => { event.clipboardData.setData('text/plain', text); event.preventDefault(); done = true; };
+    document.addEventListener('copy', handler);
+    try { return document.execCommand('copy') && done; } finally { document.removeEventListener('copy', handler); }
+  }
+
+  function copyButton(text) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy';
+    button.textContent = 'Copy';
+    button.addEventListener('click', async () => {
+      let copied = false;
+      try { copied = await copyText(text); } catch { copied = false; }
+      button.textContent = copied ? 'Copied' : 'Copy failed';
+      setTimeout(() => { button.textContent = 'Copy'; }, 1500);
+    });
+    return button;
+  }
+
+  // Some deck names join their parts with non-breaking spaces, which the browser won't wrap at, so a long
+  // name got chopped mid-word. On screen they show as ordinary spaces; Copy still copies the exact name.
+  const shown = (deck) => (typeof deck === 'string' ? deck.replace(/ /g, ' ') : deck);
+  function deckRow(blue, red) {
+    const line = row('Deck type', shown(blue), shown(red));
+    [blue, red].forEach((deck, index) => {
+      if (deck) line.children[index + 1].append(document.createElement('br'), copyButton(deck));
+    });
+    return line;
+  }
+
+  // Tournament and round once per stage. If the two players' tournaments ever differ, both are shown.
+  function eventLine(stage, blue, red) {
+    const kinds = [...new Set([blue.tournamentType, red.tournamentType].filter(Boolean).map(String))];
+    const parts = [];
+    if (kinds.length) parts.push(kinds.join(' / '));
+    if (stage.roundNumber !== null && stage.roundNumber !== undefined && stage.roundNumber !== '') parts.push('Round ' + stage.roundNumber);
+    return parts.join(' · ');
+  }
+
+  function stageCard(number, fresh) {
+    const entry = seen.get(number), stage = entry?.stage || {};
+    const red = stage.redDuelist || {}, blue = stage.blueDuelist || {}, game = stage.gameState || {};
+    const card = document.createElement('section');
+    card.className = ['stage', fresh ? '' : 'stale', folded.has(number) ? 'collapsed' : ''].filter(Boolean).join(' ');
+    card.dataset.stage = number;
+
+    const title = document.createElement('h2');
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'toggle';
+    toggle.setAttribute('aria-expanded', folded.has(number) ? 'false' : 'true');
+    toggle.title = folded.has(number) ? 'Show this stage' : 'Fold this stage';
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '▼';
+    const name = document.createElement('span');
+    name.className = 'title';
+    name.textContent = 'Stage ' + number + (fresh ? '' : entry ? ' · data from ' + clock(entry.at) : ' · no data yet');
+    const event = document.createElement('span');
+    event.className = 'event';
+    event.textContent = eventLine(stage, blue, red);
+    toggle.append(arrow, name, event);
+    toggle.addEventListener('click', () => toggleFold(number));
+    title.append(toggle);
+
+    const details = document.createElement('div');
+    details.className = 'details';
+    const table = document.createElement('table');
+    const head = document.createElement('thead');
+    const headLine = document.createElement('tr');
+    const corner = document.createElement('th');
+    headLine.append(corner, cell('th', 'BLUE', 'blue'), cell('th', 'RED', 'red'));
+    head.append(headLine);
+
+    const body = document.createElement('tbody');
+    body.append(
+      row('Name', blue.broadcastName, red.broadcastName, 'name'),
+      // Games won in the current match, as the tournament system counts them. A missing count shows —.
+      row('Game wins', game.blueGameWins, game.redGameWins, 'wins'),
+      deckRow(blue.deckType, red.deckType),
+      row('Record', blue.record, red.record)
+    );
+    table.append(head, body);
+    details.append(table);
+    card.append(title, details);
+    return card;
+  }
+
+  // While a mouse button or finger is down, new data waits: swapping the page between press and release
+  // would swallow the click. It's drawn straight after the release, once the click has happened.
+  let pressing = false, waiting = false;
+  document.addEventListener('pointerdown', () => { pressing = true; }, true);
+  const release = () => {
+    if (!pressing) return;
+    pressing = false;
+    if (waiting) { waiting = false; setTimeout(() => render(lastFresh), 0); }
+  };
+  document.addEventListener('pointerup', release, true);
+  document.addEventListener('pointercancel', release, true);
+
+  // Always three cards in order. A stage missing from a read keeps its last data, dimmed.
+  function render(fresh) {
+    lastFresh = fresh;
+    if (pressing) { waiting = true; return; }
+    const cards = STAGE_NUMBERS.map(number => stageCard(number, fresh.has(number)));
+    const drawn = cards.map(card => card.outerHTML).join('');
+    // Leave the page alone when nothing changed, so a button press isn't lost mid-click.
+    if (drawn === lastDrawn) return;
+    lastDrawn = drawn;
+    stagesBox.replaceChildren(...cards);
+  }
+
+  function warn(reason) {
+    statusLine.textContent = 'NOT UPDATING: ' + reason + ' · still trying';
+    statusLine.className = 'bad';
+  }
+
+  // Fixed wording: the browser's own error text can quote pieces of the report.
+  function explain(error) {
+    if (error.name === 'TimeoutError') return 'the report timed out';
+    if (error.name === 'TypeError') return 'could not reach the report';
+    if (error.name === 'SyntaxError') return 'the report could not be read';
+    return error.message;
+  }
+
+  let timer = null, reading = false;
+  async function refresh() {
+    clearTimeout(timer);
+    reading = true;
+    try {
+      const reply = await fetch(REPORT_URL, { cache: 'no-store', signal: AbortSignal.timeout(GIVE_UP_MS) });
+      if (!reply.ok) throw new Error('the report answered ' + reply.status);
+      const stages = await reply.json();
+      if (!Array.isArray(stages)) throw new Error('the report was not a list of stages');
+      const now = new Date(), fresh = new Set();
+      for (const stage of stages) {
+        if (!STAGE_NUMBERS.includes(stage?.stageNumber)) continue;
+        seen.set(stage.stageNumber, { stage, at: now });
+        fresh.add(stage.stageNumber);
+      }
+      render(fresh);
+      const missing = STAGE_NUMBERS.filter(number => !fresh.has(number));
+      if (missing.length) {
+        warn(missing.map(number => 'Stage ' + number).join(', ') + ' not in the report');
+      } else {
+        statusLine.textContent = 'Live · updated ' + clock(now);
+        statusLine.className = '';
+      }
+    } catch (error) {
+      // Even an odd value that can't be drawn must not stop the page trying again.
+      try { render(new Set()); } catch { /* keep what's on screen */ }
+      warn(explain(error));
+    } finally {
+      reading = false;
+      // Wait for each read to finish before the next, so a slow report never gets a pile-up.
+      timer = setTimeout(refresh, EVERY_MS);
+    }
+  }
+
+  // A browser slows the timer on a minimised or hidden window, so read again as soon as it's shown,
+  // rather than show old data under "Live" for up to a minute.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !reading) refresh();
+  });
+
+  render(new Set());
+  refresh();
+</script>
+</body>
+</html>

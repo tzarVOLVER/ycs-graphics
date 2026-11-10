@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>YCS Game Bump</title>
+    <link rel="stylesheet" href="./game-bump.css" />
+    <script>
+      window.SPXGCTemplateDefinition = {
+        description: 'YCS Game Bump',
+        playserver: 'OVERLAY',
+        playchannel: '1',
+        playlayer: '5',
+        webplayout: '5',
+        steps: '1',
+        out: 'manual',
+        uicolor: '2',
+        dataformat: 'json',
+        ycsSlot: 'full-screen',
+        editorSections: [{ title: 'Game', fields: ['f1'] }],
+        DataFields: [
+          { field: 'f1', ftype: 'textfield', title: 'Game number', value: '', ycsPrimary: true }
+        ]
+      };
+    </script>
+  </head>
+  <body>
+    <div id="game-bump" aria-label="Game bump">
+      <div class="closer">
+        <div class="band">
+          <img class="background" src="../head-to-head/assets/background.webp" alt="" />
+          <div class="game-mask"><div class="game-motion"><span class="game" data-field="game"></span></div></div>
+        </div>
+        <div class="scroll-mask scroll-mask-blue"><div class="scroll scroll-blue"><div class="scroll-track"></div></div></div>
+        <div class="scroll-mask scroll-mask-red"><div class="scroll scroll-red"><div class="scroll-track"></div></div></div>
+      </div>
+      <div class="bar bar-blue"></div>
+      <div class="bar bar-red"></div>
+    </div>
+    <div class="frame-beat start"></div>
+    <div class="frame-beat end"></div>
+    <script src="./spx.js"></script>
+  </body>
+</html>

@@ -4,6 +4,8 @@
 html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:transparent}
 #winner{position:absolute;left:763px;top:921px;width:395px;height:96px;visibility:hidden;pointer-events:none;--side:#00a9ed}
 #winner[data-side=red]{--side:#f62162}
+/* Champion: both sides take the package gold (the score bug's and Siding's round text). */
+#winner.champion{--side:#f3ce48}
 #winner.visible{visibility:visible}
 .plate{position:absolute;inset:0 0 2px;background:var(--side);border-radius:8px}
 .inset{position:absolute;left:4px;top:0;width:386px;height:60px;background:#212121;border-radius:8px}
