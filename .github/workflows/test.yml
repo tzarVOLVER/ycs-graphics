@@ -1,0 +1,34 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    # The show runs on Windows, so test there.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ycs-graphics
+
+      # The contract check compares the generated copies in ycs-spx,
+      # so check out its default branch beside this repo.
+      - uses: actions/checkout@v4
+        with:
+          repository: tzarVOLVER/ycs-spx
+          path: ycs-spx
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ycs-graphics/.nvmrc
+
+      - name: Run tests
+        working-directory: ycs-graphics
+        run: npm test
+
+      - name: Check data contracts match ycs-spx
+        working-directory: ycs-graphics
+        run: node scripts/sync-data-contracts.mjs --check --spx ../ycs-spx

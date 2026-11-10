@@ -38,6 +38,24 @@ update an existing ZIP. Export again after finalizing the show, then rehearse on
 the actual LAN and vMix machines. `manifest.json` records the application commit
 and SHA-256 hashes for the bundled files.
 
+The bundle copies the Node executable from the exporting computer. Export with
+the version in `.nvmrc` (`node --version`), so every event ships a tested Node.
+
+## Tag the release
+
+After the final export, tag both repositories with the same event name, so the
+exact code that ran can always be found and rebuilt:
+
+```powershell
+git -C ../ycs-spx tag orlando-2026-11
+git -C ../ycs-spx push origin orlando-2026-11
+git tag orlando-2026-11
+git push origin orlando-2026-11
+```
+
+Use `EVENT-YYYY-MM` (for example `orlando-2026-11`). Export from a clean
+`master`/`main` with all tests passing; tag only what was exported.
+
 Decktype artwork served through `ycs.decktypeFolders` is external to the template
 assets. The exporter preserves that ordered folder configuration, but does not
 copy those external image folders. Before running on another computer, copy or
